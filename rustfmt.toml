@@ -1,0 +1,12 @@
+# Rustfmt configuration
+# See https://rust-lang.github.io/rustfmt/ for all options
+
+# Use 2 spaces for indentation
+tab_spaces = 2
+# Maximum line width
+max_width = 100
+
+# Other common options you might want:
+# use_small_heuristics = "Default"   # How to format small items
+# edition = "2021"                   # Rust edition (usually inferred from Cargo.toml)
+
