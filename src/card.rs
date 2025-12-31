@@ -1,3 +1,6 @@
+use std::fmt;
+
+#[derive(Clone, Debug)]
 pub enum CardColor {
   Blue,
   Green,
@@ -5,6 +8,18 @@ pub enum CardColor {
   Red,
 }
 
+impl fmt::Display for CardColor {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    match self {
+      CardColor::Blue => write!(f, "Blue"),
+      CardColor::Green => write!(f, "Green"),
+      CardColor::Purple => write!(f, "Purple"),
+      CardColor::Red => write!(f, "Red"),
+    }
+  }
+}
+
+#[derive(Clone, Debug)]
 pub enum CardCategory {
   Bread,
   Building,
@@ -16,13 +31,28 @@ pub enum CardCategory {
   Wheat,
 }
 
+impl fmt::Display for CardCategory {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    match self {
+      CardCategory::Bread => write!(f, "Bread"),
+      CardCategory::Building => write!(f, "Building"),
+      CardCategory::Combo => write!(f, "Combo"),
+      CardCategory::Cup => write!(f, "Cup"),
+      CardCategory::Flower => write!(f, "Flower"),
+      CardCategory::Fruit => write!(f, "Fruit"),
+      CardCategory::Gear => write!(f, "Gear"),
+      CardCategory::Wheat => write!(f, "Wheat"),
+    }
+  }
+}
+
+#[derive(Clone, Debug)]
 pub struct Card {
   pub name: &'static str,
   pub cost: u8,
   pub activation: &'static [u8],
   pub color: CardColor,
   pub category: CardCategory,
-  pub copies: u8,
   // pub: effect
 }
 
@@ -33,7 +63,6 @@ impl Card {
     activation: &[1],
     color: CardColor::Red,
     category: CardCategory::Cup,
-    copies: 5,
     // take 3 coins from active player
   };
   pub const WHEAT_FIELD: Card = Card {
@@ -42,7 +71,6 @@ impl Card {
     activation: &[1, 2],
     color: CardColor::Blue,
     category: CardCategory::Wheat,
-    copies: 5,
     // get 1 coin from the bank
   };
   pub const VINEYARD: Card = Card {
@@ -51,7 +79,6 @@ impl Card {
     activation: &[1, 2],
     color: CardColor::Blue,
     category: CardCategory::Fruit,
-    copies: 5,
     // get 2 coins from the bank
   };
   pub const BAKERY: Card = Card {
@@ -60,7 +87,6 @@ impl Card {
     activation: &[2, 3],
     color: CardColor::Green,
     category: CardCategory::Bread,
-    copies: 5,
     // get 2 coins from the bank
   };
   pub const CAFE: Card = Card {
@@ -69,7 +95,6 @@ impl Card {
     activation: &[3],
     color: CardColor::Red,
     category: CardCategory::Cup,
-    copies: 5,
     // take 2 coins from active player
   };
   pub const FLOWER_GARDEN: Card = Card {
@@ -78,7 +103,6 @@ impl Card {
     activation: &[4],
     color: CardColor::Blue,
     category: CardCategory::Flower,
-    copies: 5,
     // get 2 coins from the bank
   };
   pub const CONVENIENCE_STORE: Card = Card {
@@ -87,7 +111,6 @@ impl Card {
     activation: &[4],
     color: CardColor::Green,
     category: CardCategory::Bread,
-    copies: 5,
     // get 3 coins from the bank
   };
   pub const FOREST: Card = Card {
@@ -96,7 +119,6 @@ impl Card {
     activation: &[5],
     color: CardColor::Blue,
     category: CardCategory::Gear,
-    copies: 5,
     // get 2 coins from the bank
   };
   pub const CORN_FIELD: Card = Card {
@@ -105,7 +127,6 @@ impl Card {
     activation: &[7],
     color: CardColor::Blue,
     category: CardCategory::Wheat,
-    copies: 5,
     // get 3 coins from the bank
   };
   pub const HAMBURGER_STAND: Card = Card {
@@ -114,7 +135,6 @@ impl Card {
     activation: &[8],
     color: CardColor::Red,
     category: CardCategory::Cup,
-    copies: 5,
     // take 2 coins from active player
   };
   pub const FAMILY_RESTAURANT: Card = Card {
@@ -123,7 +143,6 @@ impl Card {
     activation: &[9, 10],
     color: CardColor::Red,
     category: CardCategory::Cup,
-    copies: 5,
     // take 2 coins from active player
   };
   pub const APPLE_ORCHARD: Card = Card {
@@ -132,7 +151,6 @@ impl Card {
     activation: &[10],
     color: CardColor::Blue,
     category: CardCategory::Fruit,
-    copies: 5,
     // get 3 coins from the bank
   };
   pub const MINE: Card = Card {
@@ -141,7 +159,6 @@ impl Card {
     activation: &[11, 12],
     color: CardColor::Blue,
     category: CardCategory::Gear,
-    copies: 5,
     // get 6 coins from the bank
   };
   pub const FLOWER_SHOP: Card = Card {
@@ -150,7 +167,6 @@ impl Card {
     activation: &[6],
     color: CardColor::Green,
     category: CardCategory::Combo,
-    copies: 3,
     // get 3 coins from bank for each flower card
   };
   pub const BUSINESS_CENTER: Card = Card {
@@ -159,7 +175,6 @@ impl Card {
     activation: &[6],
     color: CardColor::Purple,
     category: CardCategory::Building,
-    copies: 3,
     // exhange 1 of your establishmen for one of opponents
   };
   pub const STADIUM: Card = Card {
@@ -168,7 +183,6 @@ impl Card {
     activation: &[7],
     color: CardColor::Purple,
     category: CardCategory::Building,
-    copies: 3,
     // take 3 coins from each opponent
   };
   pub const FURNITURE_FACTORY: Card = Card {
@@ -177,7 +191,6 @@ impl Card {
     activation: &[8],
     color: CardColor::Green,
     category: CardCategory::Combo,
-    copies: 3,
     // get 4 coins for each gear card
   };
   pub const SHOPPING_DISTRICT: Card = Card {
@@ -186,7 +199,6 @@ impl Card {
     activation: &[8, 9],
     color: CardColor::Purple,
     category: CardCategory::Building,
-    copies: 3,
     // for each opponent who has more than 10 coins, take half rounded down
   };
   pub const WINERY: Card = Card {
@@ -195,7 +207,6 @@ impl Card {
     activation: &[9],
     color: CardColor::Green,
     category: CardCategory::Combo,
-    copies: 3,
     // get 3 coins for each fruit card
   };
   pub const FOOD_WAREHOUSE: Card = Card {
@@ -204,7 +215,141 @@ impl Card {
     activation: &[10, 11],
     color: CardColor::Green,
     category: CardCategory::Combo,
-    copies: 3,
     // get 2 coins for each cup card
   };
+}
+
+impl fmt::Display for Card {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    let activation_str = self
+      .activation
+      .iter()
+      .map(|n| n.to_string())
+      .collect::<Vec<_>>()
+      .join(", ");
+    writeln!(f, "{{")?;
+    writeln!(f, "  name: \"{}\",", self.name)?;
+    writeln!(f, "  cost: {},", self.cost)?;
+    writeln!(f, "  activation: [{}],", activation_str)?;
+    writeln!(f, "  color: \"{}\",", self.color)?;
+    writeln!(f, "  category: \"{}\"", self.category)?;
+    write!(f, "}}")
+  }
+}
+
+pub struct DeckEntry {
+  pub card: Card,
+  pub copies: u8,
+}
+
+pub const DECK_COMPOSITION: &[DeckEntry] = &[
+  DeckEntry {
+    card: Card::SUSHI_BAR,
+    copies: 5,
+  },
+  DeckEntry {
+    card: Card::WHEAT_FIELD,
+    copies: 5,
+  },
+  DeckEntry {
+    card: Card::VINEYARD,
+    copies: 5,
+  },
+  DeckEntry {
+    card: Card::BAKERY,
+    copies: 5,
+  },
+  DeckEntry {
+    card: Card::CAFE,
+    copies: 5,
+  },
+  DeckEntry {
+    card: Card::FLOWER_GARDEN,
+    copies: 5,
+  },
+  DeckEntry {
+    card: Card::CONVENIENCE_STORE,
+    copies: 5,
+  },
+  DeckEntry {
+    card: Card::FOREST,
+    copies: 5,
+  },
+  DeckEntry {
+    card: Card::CORN_FIELD,
+    copies: 5,
+  },
+  DeckEntry {
+    card: Card::HAMBURGER_STAND,
+    copies: 5,
+  },
+  DeckEntry {
+    card: Card::FAMILY_RESTAURANT,
+    copies: 5,
+  },
+  DeckEntry {
+    card: Card::APPLE_ORCHARD,
+    copies: 5,
+  },
+  DeckEntry {
+    card: Card::MINE,
+    copies: 5,
+  },
+  DeckEntry {
+    card: Card::FLOWER_SHOP,
+    copies: 3,
+  },
+  DeckEntry {
+    card: Card::BUSINESS_CENTER,
+    copies: 3,
+  },
+  DeckEntry {
+    card: Card::STADIUM,
+    copies: 3,
+  },
+  DeckEntry {
+    card: Card::FURNITURE_FACTORY,
+    copies: 3,
+  },
+  DeckEntry {
+    card: Card::SHOPPING_DISTRICT,
+    copies: 3,
+  },
+  DeckEntry {
+    card: Card::WINERY,
+    copies: 3,
+  },
+  DeckEntry {
+    card: Card::FOOD_WAREHOUSE,
+    copies: 3,
+  },
+];
+
+pub fn build_less_than_6_deck() -> Vec<Card> {
+  DECK_COMPOSITION
+    .iter()
+    .filter(|entry| {
+      entry
+        .card
+        .activation
+        .iter()
+        .all(|&activation| activation <= 6)
+        && entry.card.cost <= 6
+    })
+    .flat_map(|entry| std::iter::repeat(entry.card.clone()).take(entry.copies.into()))
+    .collect()
+}
+
+pub fn build_greater_than_6_deck() -> Vec<Card> {
+  DECK_COMPOSITION
+    .iter()
+    .filter(|entry| {
+      entry
+        .card
+        .activation
+        .iter()
+        .all(|&activation| activation > 6)
+    })
+    .flat_map(|entry| std::iter::repeat(entry.card.clone()).take(entry.copies.into()))
+    .collect()
 }
