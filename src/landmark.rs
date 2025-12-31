@@ -1,6 +1,6 @@
 use std::fmt;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum LandmarkType {
   Immediate,
   Infinite,
@@ -15,7 +15,7 @@ impl fmt::Display for LandmarkType {
   }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct Landmark {
   pub name: &'static str,
   pub cost: &'static [u8],

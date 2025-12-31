@@ -1,6 +1,6 @@
 use std::fmt;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum CardColor {
   Blue,
   Green,
@@ -19,7 +19,7 @@ impl fmt::Display for CardColor {
   }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum CardCategory {
   Bread,
   Building,
@@ -46,7 +46,7 @@ impl fmt::Display for CardCategory {
   }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct Card {
   pub name: &'static str,
   pub cost: u8,
@@ -325,7 +325,7 @@ pub const DECK_COMPOSITION: &[DeckEntry] = &[
   },
 ];
 
-pub fn build_less_than_6_deck() -> Vec<Card> {
+pub fn build_less_than_7_deck() -> Vec<Card> {
   DECK_COMPOSITION
     .iter()
     .filter(|entry| {

@@ -5,7 +5,7 @@ mod landmark;
 mod rng;
 
 use card::build_greater_than_6_deck;
-use card::build_less_than_6_deck;
+use card::build_less_than_7_deck;
 use landmark::build_landmark_deck;
 use rng::Rng;
 
@@ -36,10 +36,10 @@ fn main() {
   //     println!("  Roll {}: {}", i, roll);
   //   }
 
-  let mut less_than_6_deck = build_less_than_6_deck();
-  random_rng.shuffle(&mut less_than_6_deck);
-  println!("\nLess than 6 Deck ({} cards):", less_than_6_deck.len());
-  for card in &less_than_6_deck {
+  let mut less_than_7_deck = build_less_than_7_deck();
+  random_rng.shuffle(&mut less_than_7_deck);
+  println!("\nLess than 7 Deck ({} cards):", less_than_7_deck.len());
+  for card in &less_than_7_deck {
     println!("{}", card.name);
   }
 
