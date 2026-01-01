@@ -43,4 +43,9 @@ impl Rng {
   pub fn shuffle<T>(&mut self, slice: &mut [T]) {
     slice.shuffle(&mut self.rng);
   }
+
+  /// Pick a random index from a slice
+  pub fn pick_random_index(&mut self, num_items: usize) -> usize {
+    self.rng.gen_range(0..num_items)
+  }
 }

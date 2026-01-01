@@ -244,8 +244,9 @@ impl Card {
     activation: &[6],
     color: CardColor::Purple,
     category: CardCategory::Building,
-    // TODO exhange 1 of your establishmen for one of opponents
-    apply_effect: |game, owner_index| {},
+    apply_effect: |game, owner_index| {
+      game.decide_exchange_establishment(owner_index);
+    },
   };
   pub const STADIUM: Card = Card {
     name: "Stadium",
