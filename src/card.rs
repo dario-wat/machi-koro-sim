@@ -53,7 +53,46 @@ pub struct Card {
   pub activation: &'static [u8],
   pub color: CardColor,
   pub category: CardCategory,
-  // pub: effect
+  pub apply_effect: fn(&mut crate::game::Game, owner_index: usize),
+}
+
+/// Helper function to give coins from the bank to a player
+fn get_coins_from_bank(game: &mut crate::game::Game, owner_index: usize, amount: u8) {
+  game.players[owner_index].coins += amount;
+}
+
+/// Helper function to move coins between two players
+fn move_coins_between_players(
+  game: &mut crate::game::Game,
+  from_index: usize,
+  to_index: usize,
+  amount: u8,
+) {
+  let from_coins = game.players[from_index].coins;
+  let coins_to_move = std::cmp::min(from_coins, amount);
+  game.players[from_index].coins -= coins_to_move;
+  game.players[to_index].coins += coins_to_move;
+}
+
+/// Helper function to take coins from active player and give to owner
+fn take_coins_from_active_player(game: &mut crate::game::Game, owner_index: usize, amount: u8) {
+  move_coins_between_players(game, game.current_player as usize, owner_index, amount);
+}
+
+/// Helper function to get coins from bank for each card that matches the predicate
+fn get_coins_from_bank_for_each_card(
+  game: &mut crate::game::Game,
+  owner_index: usize,
+  amount: u8,
+  predicate: fn(&Card) -> bool,
+) {
+  let coins_to_get = game.players[owner_index]
+    .cards
+    .iter()
+    .filter(|card| predicate(card))
+    .map(|card| amount)
+    .sum();
+  get_coins_from_bank(game, owner_index, coins_to_get);
 }
 
 impl Card {
@@ -63,7 +102,9 @@ impl Card {
     activation: &[1],
     color: CardColor::Red,
     category: CardCategory::Cup,
-    // take 3 coins from active player
+    apply_effect: |game, owner_index| {
+      take_coins_from_active_player(game, owner_index, 3);
+    },
   };
   pub const WHEAT_FIELD: Card = Card {
     name: "Wheat Field",
@@ -71,7 +112,9 @@ impl Card {
     activation: &[1, 2],
     color: CardColor::Blue,
     category: CardCategory::Wheat,
-    // get 1 coin from the bank
+    apply_effect: |game, owner_index| {
+      get_coins_from_bank(game, owner_index, 1);
+    },
   };
   pub const VINEYARD: Card = Card {
     name: "Vineyard",
@@ -79,7 +122,9 @@ impl Card {
     activation: &[1, 2],
     color: CardColor::Blue,
     category: CardCategory::Fruit,
-    // get 2 coins from the bank
+    apply_effect: |game, owner_index| {
+      get_coins_from_bank(game, owner_index, 2);
+    },
   };
   pub const BAKERY: Card = Card {
     name: "Bakery",
@@ -87,7 +132,9 @@ impl Card {
     activation: &[2, 3],
     color: CardColor::Green,
     category: CardCategory::Bread,
-    // get 2 coins from the bank
+    apply_effect: |game, owner_index| {
+      get_coins_from_bank(game, owner_index, 2);
+    },
   };
   pub const CAFE: Card = Card {
     name: "Cafe",
@@ -95,7 +142,9 @@ impl Card {
     activation: &[3],
     color: CardColor::Red,
     category: CardCategory::Cup,
-    // take 2 coins from active player
+    apply_effect: |game, owner_index| {
+      take_coins_from_active_player(game, owner_index, 2);
+    },
   };
   pub const FLOWER_GARDEN: Card = Card {
     name: "Flower Garden",
@@ -103,7 +152,9 @@ impl Card {
     activation: &[4],
     color: CardColor::Blue,
     category: CardCategory::Flower,
-    // get 2 coins from the bank
+    apply_effect: |game, owner_index| {
+      get_coins_from_bank(game, owner_index, 2);
+    },
   };
   pub const CONVENIENCE_STORE: Card = Card {
     name: "Convenience Store",
@@ -111,7 +162,9 @@ impl Card {
     activation: &[4],
     color: CardColor::Green,
     category: CardCategory::Bread,
-    // get 3 coins from the bank
+    apply_effect: |game, owner_index| {
+      get_coins_from_bank(game, owner_index, 3);
+    },
   };
   pub const FOREST: Card = Card {
     name: "Forest",
@@ -119,7 +172,9 @@ impl Card {
     activation: &[5],
     color: CardColor::Blue,
     category: CardCategory::Gear,
-    // get 2 coins from the bank
+    apply_effect: |game, owner_index| {
+      get_coins_from_bank(game, owner_index, 2);
+    },
   };
   pub const CORN_FIELD: Card = Card {
     name: "Corn Field",
@@ -127,7 +182,9 @@ impl Card {
     activation: &[7],
     color: CardColor::Blue,
     category: CardCategory::Wheat,
-    // get 3 coins from the bank
+    apply_effect: |game, owner_index| {
+      get_coins_from_bank(game, owner_index, 3);
+    },
   };
   pub const HAMBURGER_STAND: Card = Card {
     name: "Hamburger Stand",
@@ -135,7 +192,9 @@ impl Card {
     activation: &[8],
     color: CardColor::Red,
     category: CardCategory::Cup,
-    // take 2 coins from active player
+    apply_effect: |game, owner_index| {
+      take_coins_from_active_player(game, owner_index, 2);
+    },
   };
   pub const FAMILY_RESTAURANT: Card = Card {
     name: "Family Restaurant",
@@ -143,7 +202,9 @@ impl Card {
     activation: &[9, 10],
     color: CardColor::Red,
     category: CardCategory::Cup,
-    // take 2 coins from active player
+    apply_effect: |game, owner_index| {
+      take_coins_from_active_player(game, owner_index, 2);
+    },
   };
   pub const APPLE_ORCHARD: Card = Card {
     name: "Apple Orchard",
@@ -151,7 +212,9 @@ impl Card {
     activation: &[10],
     color: CardColor::Blue,
     category: CardCategory::Fruit,
-    // get 3 coins from the bank
+    apply_effect: |game, owner_index| {
+      get_coins_from_bank(game, owner_index, 3);
+    },
   };
   pub const MINE: Card = Card {
     name: "Mine",
@@ -159,7 +222,9 @@ impl Card {
     activation: &[11, 12],
     color: CardColor::Blue,
     category: CardCategory::Gear,
-    // get 6 coins from the bank
+    apply_effect: |game, owner_index| {
+      get_coins_from_bank(game, owner_index, 6);
+    },
   };
   pub const FLOWER_SHOP: Card = Card {
     name: "Flower Shop",
@@ -167,7 +232,11 @@ impl Card {
     activation: &[6],
     color: CardColor::Green,
     category: CardCategory::Combo,
-    // get 3 coins from bank for each flower card
+    apply_effect: |game, owner_index| {
+      get_coins_from_bank_for_each_card(game, owner_index, 3, |card| {
+        card.category == CardCategory::Flower
+      });
+    },
   };
   pub const BUSINESS_CENTER: Card = Card {
     name: "Business Center",
@@ -175,7 +244,8 @@ impl Card {
     activation: &[6],
     color: CardColor::Purple,
     category: CardCategory::Building,
-    // exhange 1 of your establishmen for one of opponents
+    // TODO exhange 1 of your establishmen for one of opponents
+    apply_effect: |game, owner_index| {},
   };
   pub const STADIUM: Card = Card {
     name: "Stadium",
@@ -183,7 +253,13 @@ impl Card {
     activation: &[7],
     color: CardColor::Purple,
     category: CardCategory::Building,
-    // take 3 coins from each opponent
+    apply_effect: |game, owner_index| {
+      for player_index in 0..game.players.len() {
+        if player_index != owner_index {
+          move_coins_between_players(game, game.current_player as usize, player_index, 3);
+        }
+      }
+    },
   };
   pub const FURNITURE_FACTORY: Card = Card {
     name: "Furniture Factory",
@@ -191,7 +267,11 @@ impl Card {
     activation: &[8],
     color: CardColor::Green,
     category: CardCategory::Combo,
-    // get 4 coins for each gear card
+    apply_effect: |game, owner_index| {
+      get_coins_from_bank_for_each_card(game, owner_index, 4, |card| {
+        card.color == CardColor::Green
+      });
+    },
   };
   pub const SHOPPING_DISTRICT: Card = Card {
     name: "Shopping District",
@@ -199,7 +279,14 @@ impl Card {
     activation: &[8, 9],
     color: CardColor::Purple,
     category: CardCategory::Building,
-    // for each opponent who has more than 10 coins, take half rounded down
+    apply_effect: |game, owner_index| {
+      for player_index in 0..game.players.len() {
+        if player_index != owner_index && game.players[player_index].coins > 10 {
+          let coins_to_take = game.players[player_index].coins / 2;
+          move_coins_between_players(game, player_index, owner_index, coins_to_take);
+        }
+      }
+    },
   };
   pub const WINERY: Card = Card {
     name: "Winery",
@@ -207,7 +294,11 @@ impl Card {
     activation: &[9],
     color: CardColor::Green,
     category: CardCategory::Combo,
-    // get 3 coins for each fruit card
+    apply_effect: |game, owner_index| {
+      get_coins_from_bank_for_each_card(game, owner_index, 3, |card| {
+        card.category == CardCategory::Fruit
+      });
+    },
   };
   pub const FOOD_WAREHOUSE: Card = Card {
     name: "Food Warehouse",
@@ -215,7 +306,11 @@ impl Card {
     activation: &[10, 11],
     color: CardColor::Green,
     category: CardCategory::Combo,
-    // get 2 coins for each cup card
+    apply_effect: |game, owner_index| {
+      get_coins_from_bank_for_each_card(game, owner_index, 2, |card| {
+        card.category == CardCategory::Cup
+      });
+    },
   };
 }
 
