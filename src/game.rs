@@ -1,11 +1,9 @@
 use std::collections::HashMap;
 
-use crate::card::build_greater_than_6_deck;
-use crate::card::build_less_than_7_deck;
-use crate::card::Card;
-use crate::landmark::build_landmark_deck;
-use crate::landmark::Landmark;
-use crate::player::Player;
+use crate::models::card::build_greater_than_6_deck;
+use crate::models::card::build_less_than_7_deck;
+use crate::models::landmark::build_landmark_deck;
+use crate::models::{Card, Landmark, Player};
 use crate::rng::Rng;
 
 pub struct Game {

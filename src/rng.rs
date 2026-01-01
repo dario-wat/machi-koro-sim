@@ -44,6 +44,7 @@ impl Rng {
     slice.shuffle(&mut self.rng);
   }
 
+  // TODO this shouldn't be here . this is part of player
   /// Pick a random index from a slice
   pub fn pick_random_index(&mut self, num_items: usize) -> usize {
     self.rng.gen_range(0..num_items)

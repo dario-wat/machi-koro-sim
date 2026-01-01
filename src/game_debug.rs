@@ -1,6 +1,6 @@
 use colored::Colorize;
 
-use crate::card::CardColor;
+use crate::models::CardColor;
 use crate::game::Game;
 
 /// Color a string based on card color
@@ -39,9 +39,10 @@ pub fn debug_print(game: &Game) {
     .less_than_7_face_up
     .iter()
     .map(|(card, count)| {
+      let def = card.def();
       format!(
         "({}, {})",
-        color_card_name(card.name, &card.color),
+        color_card_name(def.name, &def.color),
         count.to_string().white()
       )
     })
@@ -57,9 +58,10 @@ pub fn debug_print(game: &Game) {
     .greater_than_6_face_up
     .iter()
     .map(|(card, count)| {
+      let def = card.def();
       format!(
         "({}, {})",
-        color_card_name(card.name, &card.color),
+        color_card_name(def.name, &def.color),
         count.to_string().white()
       )
     })

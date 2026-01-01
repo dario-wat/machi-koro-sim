@@ -1,5 +1,5 @@
-use crate::card::Card;
-use crate::landmark::Landmark;
+use super::card::Card;
+use super::landmark::Landmark;
 
 pub struct Player {
   pub coins: u8,

@@ -1,11 +1,10 @@
 #![allow(warnings)] // Disable all warnings
 
-mod card;
 mod game;
 mod game_debug;
-mod landmark;
-mod player;
+mod models;
 mod rng;
+mod rules;
 
 use game::Game;
 use game_debug::debug_print;
