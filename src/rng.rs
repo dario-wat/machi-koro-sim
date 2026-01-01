@@ -4,6 +4,7 @@ use rand::{Rng as RandRng, SeedableRng};
 
 pub struct Rng {
   rng: StdRng,
+  seed: u64,
 }
 
 impl Rng {
@@ -11,6 +12,7 @@ impl Rng {
   pub fn new_with_seed(seed: u64) -> Self {
     Self {
       rng: StdRng::seed_from_u64(seed),
+      seed,
     }
   }
 
@@ -19,7 +21,12 @@ impl Rng {
     let seed = rand::thread_rng().gen::<u64>();
     Self {
       rng: StdRng::seed_from_u64(seed),
+      seed,
     }
+  }
+
+  pub fn get_seed(&self) -> u64 {
+    self.seed
   }
 
   /// Roll a single die (returns 1-6)

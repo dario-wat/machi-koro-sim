@@ -5,14 +5,17 @@ use crate::card::build_less_than_7_deck;
 use crate::card::Card;
 use crate::landmark::build_landmark_deck;
 use crate::landmark::Landmark;
+use crate::player::Player;
 use crate::rng::Rng;
 
 pub struct Game {
   pub rng: Rng,
-  pub seed: Option<u64>,
+  pub seed: u64,
 
   pub current_player: u8,
   pub current_round: u8,
+
+  pub players: Vec<Player>,
 
   // Remaining cards in the deck
   pub less_than_7_deck: Vec<Card>,
@@ -40,11 +43,13 @@ impl Game {
     rng.shuffle(&mut greater_than_6_deck);
     rng.shuffle(&mut landmark_deck);
 
+    let seed = rng.get_seed();
     let mut game = Self {
       rng,
-      seed: rng_seed,
+      seed,
       current_player: 0,
       current_round: 0,
+      players: Vec::new(),
       less_than_7_deck,
       greater_than_6_deck,
       landmark_deck,

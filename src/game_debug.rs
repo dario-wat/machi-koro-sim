@@ -16,10 +16,11 @@ fn color_card_name(name: &str, color: &CardColor) -> colored::ColoredString {
 /// Print debug information about the game state
 pub fn debug_print(game: &Game) {
   // Print seed
-  match game.seed {
-    Some(seed) => println!("{} {}", "Seed:".cyan().bold(), seed.to_string().yellow()),
-    None => println!("{} {}", "Seed:".cyan().bold(), "(random)".yellow()),
-  }
+  println!(
+    "{} {}",
+    "Seed:".cyan().bold(),
+    game.seed.to_string().yellow()
+  );
 
   // Print current player and round
   println!(
@@ -97,4 +98,3 @@ pub fn debug_print(game: &Game) {
     "cards".bright_black()
   );
 }
-
