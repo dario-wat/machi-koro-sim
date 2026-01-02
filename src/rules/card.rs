@@ -135,3 +135,48 @@ fn move_coins_between_players(game: &mut Game, from_index: usize, to_index: usiz
 fn take_coins_from_active_player(game: &mut Game, owner_index: usize, amount: u8) {
   move_coins_between_players(game, game.current_player as usize, owner_index, amount);
 }
+
+const DECK_COMPOSITION: &[(Card, u8)] = &[
+  (Card::SushiBar, 5),
+  (Card::WheatField, 5),
+  (Card::Vineyard, 5),
+  (Card::Bakery, 5),
+  (Card::Cafe, 5),
+  (Card::FlowerGarden, 5),
+  (Card::ConvenienceStore, 5),
+  (Card::Forest, 5),
+  (Card::CornField, 5),
+  (Card::HamburgerStand, 5),
+  (Card::FamilyRestaurant, 5),
+  (Card::AppleOrchard, 5),
+  (Card::Mine, 5),
+  (Card::FlowerShop, 3),
+  (Card::BusinessCenter, 3),
+  (Card::Stadium, 3),
+  (Card::FurnitureFactory, 3),
+  (Card::ShoppingDistrict, 3),
+  (Card::Winery, 3),
+  (Card::FoodWarehouse, 3),
+];
+
+pub fn build_less_than_7_deck() -> Vec<Card> {
+  DECK_COMPOSITION
+    .iter()
+    .filter(|(card, _copies)| {
+      let def = card.def();
+      def.activation.iter().all(|&activation| activation <= 6)
+    })
+    .flat_map(|(card, copies)| std::iter::repeat(card.clone()).take(*copies as usize))
+    .collect()
+}
+
+pub fn build_greater_than_6_deck() -> Vec<Card> {
+  DECK_COMPOSITION
+    .iter()
+    .filter(|(card, _copies)| {
+      let def = card.def();
+      def.activation.iter().all(|&activation| activation > 6)
+    })
+    .flat_map(|(card, copies)| std::iter::repeat(card.clone()).take(*copies as usize))
+    .collect()
+}
