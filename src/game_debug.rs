@@ -76,7 +76,7 @@ pub fn debug_print(game: &Game) {
   let landmark_str: Vec<String> = game
     .landmark_face_up
     .iter()
-    .map(|landmark| landmark.name.yellow().to_string())
+    .map(|landmark| landmark.def().name.yellow().to_string())
     .collect();
   println!("{} {}", "Landmarks:".blue().bold(), landmark_str.join(", "));
 

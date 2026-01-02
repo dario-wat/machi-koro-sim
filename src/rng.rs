@@ -35,18 +35,12 @@ impl Rng {
   }
 
   /// Roll two dice (returns 2-12)
-  pub fn roll_two_dice(&mut self) -> u8 {
-    self.roll_die() + self.roll_die()
+  pub fn roll_two_dice(&mut self) -> (u8, u8) {
+    (self.roll_die(), self.roll_die())
   }
 
   /// Shuffle a mutable slice in place using the RNG seed
   pub fn shuffle<T>(&mut self, slice: &mut [T]) {
     slice.shuffle(&mut self.rng);
-  }
-
-  // TODO this shouldn't be here . this is part of player
-  /// Pick a random index from a slice
-  pub fn pick_random_index(&mut self, num_items: usize) -> usize {
-    self.rng.gen_range(0..num_items)
   }
 }

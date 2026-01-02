@@ -3,6 +3,7 @@
 mod game;
 mod game_debug;
 mod models;
+mod player_strategies;
 mod rng;
 mod rules;
 

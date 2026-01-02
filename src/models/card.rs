@@ -55,7 +55,7 @@ pub struct CardDef {
   pub category: CardCategory,
 }
 
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Hash, PartialEq, Eq)]
 pub enum Card {
   SushiBar,
   WheatField,

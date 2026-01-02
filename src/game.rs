@@ -1,10 +1,10 @@
 use std::collections::HashMap;
 
-use crate::models::landmark::build_landmark_deck;
 use crate::models::{Card, Landmark, Player};
 use crate::rng::Rng;
 use crate::rules::card::build_greater_than_6_deck;
 use crate::rules::card::build_less_than_7_deck;
+use crate::rules::landmark::build_landmark_deck;
 
 pub struct Game {
   pub rng: Rng,
@@ -90,35 +90,5 @@ impl Game {
     self.refill_less_than_7_face_up();
     self.refill_greater_than_6_face_up();
     self.refill_landmark_face_up();
-  }
-
-  /// Exchange establishment: owner gives one card to opponent and takes one from opponent
-  pub fn decide_exchange_establishment(&mut self, owner_index: usize) {
-    let opponent_indices: Vec<usize> = (0..self.players.len())
-      .filter(|&i| i != owner_index)
-      .collect();
-    if opponent_indices.is_empty() {
-      return;
-    }
-
-    let opponent_index = opponent_indices[self.rng.pick_random_index(opponent_indices.len())];
-    if self.players[owner_index].cards.is_empty() || self.players[opponent_index].cards.is_empty() {
-      return;
-    }
-
-    let opponent_card_index = self
-      .rng
-      .pick_random_index(self.players[opponent_index].cards.len());
-    let opponent_card = self.players[opponent_index]
-      .cards
-      .remove(opponent_card_index);
-
-    let owner_card_index = self
-      .rng
-      .pick_random_index(self.players[owner_index].cards.len());
-    let owner_card = self.players[owner_index].cards.remove(owner_card_index);
-
-    self.players[opponent_index].cards.push(owner_card);
-    self.players[owner_index].cards.push(opponent_card);
   }
 }
