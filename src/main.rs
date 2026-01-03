@@ -1,15 +1,14 @@
 #![allow(warnings)] // Disable all warnings
 
+mod debug;
 mod engine;
 mod game;
-mod game_debug;
 mod models;
 mod player_strategies;
 mod rng;
 mod rules;
 
 use game::Game;
-use game_debug::debug_print;
 
 use crate::{engine::Engine, player_strategies::RandomStrategy};
 

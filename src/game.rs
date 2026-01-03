@@ -8,9 +8,6 @@ use crate::rules::card::build_less_than_7_deck;
 use crate::rules::landmark::build_landmark_deck;
 
 const LANDMARKS_TO_WIN: usize = 3;
-pub const BUY_ONLY_TURNS: usize = 3;
-pub const MIN_PLAYERS: usize = 2;
-pub const MAX_PLAYERS: usize = 4;
 
 pub struct Game {
   pub rng: Rng,

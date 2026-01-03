@@ -1,7 +1,9 @@
 use crate::{
-  game::{Game, BUY_ONLY_TURNS, MAX_PLAYERS, MIN_PLAYERS},
-  game_debug::debug_print,
-  models::{Card, CardColor, Player},
+  debug::{
+    debug_print_dice_roll, debug_print_game, debug_print_purchase_decision, debug_print_winner,
+  },
+  game::Game,
+  models::{Card, CardColor, Landmark, Player},
   player_strategies::{
     player_strategy::{DiceRollDecision, PurchaseDecision},
     PlayerStrategy,
@@ -11,6 +13,10 @@ use crate::{
     landmark::{activate_landmark, on_dice_roll, on_turn_end},
   },
 };
+
+const BUY_ONLY_TURNS: usize = 3;
+const MIN_PLAYERS: usize = 2;
+const MAX_PLAYERS: usize = 4;
 
 pub struct Engine {
   game: Game,
@@ -36,19 +42,17 @@ impl Engine {
       panic!("Invalid number of players");
     }
 
-    debug_print(&self.game);
-    println!("--------------------------------");
+    debug_print_game(&self.game);
     loop {
       self.play_turn();
-      debug_print(&self.game);
-      println!("--------------------------------");
+      debug_print_game(&self.game);
 
       if self.game.winner().is_some() {
         break;
       }
     }
 
-    println!("Winner: {}", self.game.winner().unwrap());
+    debug_print_winner(self.game.winner().unwrap());
   }
 
   pub fn play_turn(&mut self) {
@@ -63,8 +67,10 @@ impl Engine {
   /// First 3 turns are buy only turns
   fn play_buy_only_turn(&mut self) {
     // Phase 1: Buy card
+    // Buy phase for the first 3 turns is a little bit different. It does not trigger any effects.
     let decision = self.player_strategies[self.game.current_player].decide_purchase(&self.game);
-    println!("{}", decision);
+    debug_print_purchase_decision(decision);
+
     match decision {
       PurchaseDecision::BuyCard(card) => self.game.buy_card(card),
       PurchaseDecision::BuyLandmark(landmark) => self.game.buy_landmark(landmark),
@@ -77,50 +83,70 @@ impl Engine {
     let active_landmarks = self.game.get_active_landmarks();
 
     // Phase 1: Roll dice
+    let dice_roll_sum = self.roll_dice_phase(&active_landmarks);
+
+    // Phase 2: Earn income
+    self.earn_income_phase(&active_landmarks, dice_roll_sum);
+
+    // Phase 3: Buy card or landmark
+    self.buy_phase(&active_landmarks);
+  }
+
+  /// Phase 1: Roll dice
+  /// In this phase, the player chooses to roll either one or two dice.
+  /// The landmarks then trigger their effects based on the dice roll.
+  fn roll_dice_phase(&mut self, active_landmarks: &Vec<Landmark>) -> u8 {
     let decision = self.player_strategies[self.game.current_player].decide_dice_roll(&self.game);
     let dice_roll = match decision {
       DiceRollDecision::RollOne => (self.game.roll_one_die(), 0),
       DiceRollDecision::RollTwo => self.game.roll_two_dice(),
     };
-    let dice_roll_sum = dice_roll.0 + dice_roll.1;
-    if dice_roll.1 == 0 {
-      println!("Dice roll: {} (total: {})", dice_roll.0, dice_roll_sum);
-    } else {
-      println!(
-        "Dice roll: {} + {} (total: {})",
-        dice_roll.0, dice_roll.1, dice_roll_sum
-      );
-    }
+
+    debug_print_dice_roll(dice_roll);
+
     for landmark in active_landmarks.iter() {
       on_dice_roll(*landmark, &mut self.game, dice_roll);
     }
-    // Phase 2: Earn income (activate cards)
-    // Activation order: Red -> Blue and Green -> Purple -> Orange/Landmarks
-    // Pay coins in reverse order of players
 
-    // Collect cards to activate (to avoid borrow conflicts)
+    dice_roll.0 + dice_roll.1
+  }
+
+  /// Phase 2: Earn income (activate cards)
+  /// All cards are activated in the order of their color.
+  /// Activation order: Red -> Blue and Green -> Purple -> Orange/Landmarks
+  /// For red cards, pay coins in reverse order of players
+  fn earn_income_phase(&mut self, active_landmarks: &Vec<Landmark>, dice_roll_sum: u8) {
+    // Collect cards to activate (to avoid borrow conflicts). Vec<(card, card owner index)>
     let mut cards_to_activate: Vec<(Card, usize)> = Vec::new();
+
+    // Collect red cards (all players except the current player)
     for player_index in self.game.other_players_reverse() {
       for card in self.game.players[player_index].cards.iter() {
-        if card.def().color == CardColor::Red {
+        if card.def().color == CardColor::Red && card.def().activation.contains(&dice_roll_sum) {
           cards_to_activate.push((*card, player_index));
         }
       }
     }
+
+    // Collect blue cards (all players)
     for (player_index, player) in self.game.players.iter().enumerate() {
       for card in player.cards.iter() {
-        if card.def().color == CardColor::Blue {
+        if card.def().color == CardColor::Blue && card.def().activation.contains(&dice_roll_sum) {
           cards_to_activate.push((*card, player_index));
         }
       }
     }
+
+    // Collect green cards (current player)
     for card in self.game.players[self.game.current_player].cards.iter() {
-      if card.def().color == CardColor::Green {
+      if card.def().color == CardColor::Green && card.def().activation.contains(&dice_roll_sum) {
         cards_to_activate.push((*card, self.game.current_player));
       }
     }
+
+    // Collect purple cards (current player)
     for card in self.game.players[self.game.current_player].cards.iter() {
-      if card.def().color == CardColor::Purple {
+      if card.def().color == CardColor::Purple && card.def().activation.contains(&dice_roll_sum) {
         cards_to_activate.push((*card, self.game.current_player));
       }
     }
@@ -129,15 +155,24 @@ impl Engine {
     for (card, player_index) in cards_to_activate {
       activate_card(card, &mut self.game, player_index);
     }
+  }
 
-    // Phase 3: Buy card or landmark
+  /// Phase 3: Buy card or landmark
+  /// If the player has no coins, get 1 coin from the bank. The player then also chooses to
+  /// either buy a card or landmark, or do nothing.
+  /// After the player has made their decision, the landmarks trigger their effects based on whether
+  /// the player built something this turn.
+  fn buy_phase(&mut self, active_landmarks: &Vec<Landmark>) {
+    // If the player has no coins, get 1 coin from the bank
     if self.game.players[self.game.current_player].coins == 0 {
       self.game.get_coins_from_bank(self.game.current_player, 1);
     }
 
     let mut built_something_this_turn = false;
+
     let decision = self.player_strategies[self.game.current_player].decide_purchase(&self.game);
-    println!("{}", decision);
+    debug_print_purchase_decision(decision);
+
     match decision {
       PurchaseDecision::BuyCard(card) => {
         self.game.buy_card(card);
@@ -145,11 +180,15 @@ impl Engine {
       }
       PurchaseDecision::BuyLandmark(landmark) => {
         self.game.buy_landmark(landmark);
-        activate_landmark(landmark, &mut self.game);
         built_something_this_turn = true;
+
+        // Activate built landmark
+        activate_landmark(landmark, &mut self.game);
       }
       PurchaseDecision::BuyNothing => {}
     }
+
+    // Trigger landmark effects for turn end
     for landmark in active_landmarks.iter() {
       on_turn_end(*landmark, &mut self.game, built_something_this_turn);
     }
