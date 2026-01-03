@@ -20,7 +20,7 @@ impl fmt::Display for LandmarkType {
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct LandmarkDef {
   pub name: &'static str,
-  pub cost: &'static [u8],
+  pub cost: &'static [u16],
   pub landmark_type: LandmarkType,
 }
 

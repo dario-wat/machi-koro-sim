@@ -49,7 +49,7 @@ impl fmt::Display for CardCategory {
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct CardDef {
   pub name: &'static str,
-  pub cost: u8,
+  pub cost: u16,
   pub activation: &'static [u8],
   pub color: CardColor,
   pub category: CardCategory,

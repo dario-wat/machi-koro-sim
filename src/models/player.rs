@@ -2,7 +2,7 @@ use super::card::Card;
 use super::landmark::Landmark;
 
 pub struct Player {
-  pub coins: u8,
+  pub coins: u16,
   pub cards: Vec<Card>,
   pub landmarks: Vec<Landmark>,
 }
@@ -21,6 +21,9 @@ impl Player {
   }
 
   pub fn can_afford_landmark(&self, landmark: &Landmark) -> bool {
+    if *landmark == Landmark::LoanOffice && self.landmarks.len() != 0 {
+      return false;
+    }
     self.coins >= landmark.def().cost[self.landmarks.len()]
   }
 

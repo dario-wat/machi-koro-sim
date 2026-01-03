@@ -5,7 +5,7 @@ use crate::models::CardDef;
 /// Used by both card and landmark rules
 impl Game {
   #[inline]
-  pub fn get_coins_from_bank(&mut self, owner_index: usize, amount: u8) {
+  pub fn get_coins_from_bank(&mut self, owner_index: usize, amount: u16) {
     self.players[owner_index].coins += amount;
   }
 
@@ -13,10 +13,10 @@ impl Game {
   pub fn get_coins_from_bank_for_each_card(
     &mut self,
     owner_index: usize,
-    amount: u8,
+    amount: u16,
     predicate: fn(&CardDef) -> bool,
   ) {
-    let coins_to_get: u8 = self.players[owner_index]
+    let coins_to_get: u16 = self.players[owner_index]
       .cards
       .iter()
       .filter(|card| predicate(&card.def()))
@@ -29,14 +29,14 @@ impl Game {
   pub fn redistribute_coins_evenly(&mut self) {
     let total_coins: u16 = self.players.iter().map(|player| player.coins as u16).sum();
     let num_players = self.players.len() as u16;
-    let coins_per_player = ((total_coins + num_players - 1) / num_players) as u8;
+    let coins_per_player = ((total_coins + num_players - 1) / num_players) as u16;
     for player in self.players.iter_mut() {
       player.coins = coins_per_player;
     }
   }
 
   #[inline]
-  fn move_coins_between_players(&mut self, from_index: usize, to_index: usize, amount: u8) {
+  fn move_coins_between_players(&mut self, from_index: usize, to_index: usize, amount: u16) {
     let from_coins = self.players[from_index].coins;
     let coins_to_move = std::cmp::min(from_coins, amount);
     self.players[from_index].coins -= coins_to_move;
@@ -44,12 +44,12 @@ impl Game {
   }
 
   #[inline]
-  pub fn take_coins_from_active_player(&mut self, owner_index: usize, amount: u8) {
+  pub fn take_coins_from_active_player(&mut self, owner_index: usize, amount: u16) {
     self.move_coins_between_players(self.current_player as usize, owner_index, amount);
   }
 
   #[inline]
-  pub fn take_coins_from_each_opponent(&mut self, owner_index: usize, amount: u8) {
+  pub fn take_coins_from_each_opponent(&mut self, owner_index: usize, amount: u16) {
     for player_index in 0..self.players.len() {
       if player_index != owner_index {
         self.move_coins_between_players(player_index, owner_index, amount);
@@ -71,7 +71,7 @@ impl Game {
   pub fn take_coins_from_each_opponent_for_each_landmark(&mut self, owner_index: usize) {
     for player_index in 0..self.players.len() {
       if player_index != owner_index {
-        let landmarks_owned = self.players[player_index].landmarks.len() as u8;
+        let landmarks_owned = self.players[player_index].landmarks.len() as u16;
         self.move_coins_between_players(player_index, owner_index, 3 * landmarks_owned);
       }
     }
@@ -81,7 +81,7 @@ impl Game {
   pub fn take_coins_from_each_opponent_for_each_card(
     &mut self,
     owner_index: usize,
-    amount: u8,
+    amount: u16,
     predicate: fn(&CardDef) -> bool,
   ) {
     for player_index in 0..self.players.len() {

@@ -40,6 +40,8 @@ impl Engine {
       debug_print(&self.game);
       println!("--------------------------------");
     }
+
+    println!("Winner: {}", self.game.winner().unwrap());
   }
 
   pub fn play_turn(&mut self) {
@@ -93,6 +95,23 @@ impl Engine {
         }
       }
     }
+    for (player_index, player) in self.game.players.iter().enumerate() {
+      for card in player.cards.iter() {
+        if card.def().color == CardColor::Blue {
+          cards_to_activate.push((*card, player_index));
+        }
+      }
+    }
+    for card in self.game.players[self.game.current_player].cards.iter() {
+      if card.def().color == CardColor::Green {
+        cards_to_activate.push((*card, self.game.current_player));
+      }
+    }
+    for card in self.game.players[self.game.current_player].cards.iter() {
+      if card.def().color == CardColor::Purple {
+        cards_to_activate.push((*card, self.game.current_player));
+      }
+    }
 
     // Activate collected cards
     for (card, player_index) in cards_to_activate {
@@ -100,6 +119,13 @@ impl Engine {
     }
 
     // Phase 3: Buy card or landmark
-    // Receive 1 coin at the beginning of this phase if no coins
+    // TODO Receive 1 coin at the beginning of this phase if no coins
+    let decision = self.player_strategies[self.game.current_player].decide_purchase(&self.game);
+    println!("{}", decision);
+    match decision {
+      PurchaseDecision::BuyCard(card) => self.game.buy_card(card),
+      PurchaseDecision::BuyLandmark(landmark) => self.game.buy_landmark(landmark),
+      PurchaseDecision::BuyNothing => {}
+    }
   }
 }
