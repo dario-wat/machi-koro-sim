@@ -6,12 +6,12 @@ use crate::player_strategies::player_strategy::{
 pub struct GreedyStrategy;
 
 impl PlayerStrategy for GreedyStrategy {
-  fn decide_dice_roll(&mut self, game: &Game, owner_index: usize) -> DiceRollDecision {
+  fn decide_dice_roll(&mut self, game: &Game) -> DiceRollDecision {
     // TODO: Implement greedy strategy
     DiceRollDecision::RollTwo
   }
 
-  fn decide_purchase(&mut self, game: &Game, owner_index: usize) -> PurchaseDecision {
+  fn decide_purchase(&mut self, game: &Game) -> PurchaseDecision {
     // TODO: Implement greedy strategy
     PurchaseDecision::BuyNothing
   }

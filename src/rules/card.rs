@@ -63,6 +63,7 @@ pub fn activate_card(card: Card, game: &mut Game, owner_index: usize) {
 
     Card::BusinessCenter => {
       // TODO: exchange establishment
+      // this effect is optional. the card itself can be exchanged
     }
 
     Card::Stadium => {

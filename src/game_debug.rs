@@ -1,7 +1,7 @@
 use colored::Colorize;
 
-use crate::models::CardColor;
 use crate::game::Game;
+use crate::models::CardColor;
 
 /// Color a string based on card color
 fn color_card_name(name: &str, color: &CardColor) -> colored::ColoredString {
@@ -15,13 +15,6 @@ fn color_card_name(name: &str, color: &CardColor) -> colored::ColoredString {
 
 /// Print debug information about the game state
 pub fn debug_print(game: &Game) {
-  // Print seed
-  println!(
-    "{} {}",
-    "Seed:".cyan().bold(),
-    game.seed.to_string().yellow()
-  );
-
   // Print current player and round
   println!(
     "{} {}",
@@ -31,8 +24,18 @@ pub fn debug_print(game: &Game) {
   println!(
     "{} {}",
     "Current Round:".cyan().bold(),
-    game.current_round.to_string().yellow()
+    game.get_round().to_string().yellow()
   );
+
+  // Print coins for each player
+  println!("{}", "Players:".cyan().bold());
+  for (index, player) in game.players.iter().enumerate() {
+    println!(
+      "  Player {}: {} coins",
+      index.to_string().yellow(),
+      player.coins.to_string().green()
+    );
+  }
 
   // Print face-up cards for less than 7 deck
   let less_than_7_str: Vec<String> = game

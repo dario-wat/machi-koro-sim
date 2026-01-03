@@ -19,7 +19,7 @@ impl RandomStrategy {
 }
 
 impl PlayerStrategy for RandomStrategy {
-  fn decide_dice_roll(&mut self, game: &Game, owner_index: usize) -> DiceRollDecision {
+  fn decide_dice_roll(&mut self, game: &Game) -> DiceRollDecision {
     if self.rng.gen_bool(0.5) {
       DiceRollDecision::RollOne
     } else {
@@ -27,18 +27,35 @@ impl PlayerStrategy for RandomStrategy {
     }
   }
 
-  fn decide_purchase(&mut self, game: &Game, owner_index: usize) -> PurchaseDecision {
+  /// Player chooses a random card, landmark or nothing to buy. Each options has equal probability.
+  /// E.g. if player can afford 2 cards and 1 landmark, each option has a 1/4 probability.
+  fn decide_purchase(&mut self, game: &Game) -> PurchaseDecision {
     let mut options = Vec::new();
 
-    for card in game.less_than_7_face_up.keys() {
+    for card in game
+      .less_than_7_face_up
+      .keys()
+      .filter(|card| game.current_player_can_afford_card(card))
+    {
       options.push(PurchaseDecision::BuyCard(*card));
     }
-    for card in game.greater_than_6_face_up.keys() {
+
+    for card in game
+      .greater_than_6_face_up
+      .keys()
+      .filter(|card| game.current_player_can_afford_card(card))
+    {
       options.push(PurchaseDecision::BuyCard(*card));
     }
-    for landmark in &game.landmark_face_up {
+
+    for landmark in game
+      .landmark_face_up
+      .iter()
+      .filter(|landmark| game.current_player_can_afford_landmark(landmark))
+    {
       options.push(PurchaseDecision::BuyLandmark(*landmark));
     }
+
     options.push(PurchaseDecision::BuyNothing);
 
     *options
