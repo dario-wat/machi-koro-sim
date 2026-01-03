@@ -1,17 +1,21 @@
-use crate::game::Game;
-use crate::player_strategies::player_strategy::{
-  DiceRollDecision, PlayerStrategy, PurchaseDecision,
-};
-use crate::player_strategies::strategy_utils::decide_purchase_randomly;
 use rand::rngs::StdRng;
 use rand::seq::SliceRandom;
 use rand::{Rng, SeedableRng};
 
-pub struct RandomStrategy {
+use crate::{
+  game::Game,
+  player_strategies::{
+    player_strategy::{DiceRollDecision, PurchaseDecision},
+    strategy_utils::decide_purchase_randomly,
+    PlayerStrategy,
+  },
+};
+
+pub struct OptimizedStrategy {
   rng: StdRng,
 }
 
-impl RandomStrategy {
+impl OptimizedStrategy {
   pub fn new() -> Self {
     Self {
       rng: StdRng::from_entropy(),
@@ -19,7 +23,7 @@ impl RandomStrategy {
   }
 }
 
-impl PlayerStrategy for RandomStrategy {
+impl PlayerStrategy for OptimizedStrategy {
   fn decide_dice_roll(&mut self, game: &Game) -> DiceRollDecision {
     if self.rng.gen_bool(0.5) {
       DiceRollDecision::RollOne

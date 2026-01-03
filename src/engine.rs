@@ -25,6 +25,12 @@ pub struct Engine {
   player_strategies: Vec<Box<dyn PlayerStrategy>>,
 }
 
+pub struct SimulationResult {
+  pub card_counts: HashMap<Card, usize>,
+  pub winner_index: usize,
+  pub winning_round: usize,
+}
+
 impl Engine {
   pub fn new() -> Self {
     Self {
@@ -82,22 +88,20 @@ impl Engine {
 
   /// Normal turn has 3 phases: Roll dice, earn income, buy card or landmark
   fn play_normal_turn(&mut self) {
-    let active_landmarks = self.game.get_active_landmarks();
-
     // Phase 1: Roll dice
-    let dice_roll_sum = self.roll_dice_phase(&active_landmarks);
+    let dice_roll_sum = self.roll_dice_phase();
 
     // Phase 2: Earn income
-    self.earn_income_phase(&active_landmarks, dice_roll_sum);
+    self.earn_income_phase(dice_roll_sum);
 
     // Phase 3: Buy card or landmark
-    self.buy_phase(&active_landmarks);
+    self.buy_phase();
   }
 
   /// Phase 1: Roll dice
   /// In this phase, the player chooses to roll either one or two dice.
   /// The landmarks then trigger their effects based on the dice roll.
-  fn roll_dice_phase(&mut self, active_landmarks: &Vec<Landmark>) -> u8 {
+  fn roll_dice_phase(&mut self) -> u8 {
     let decision = self.player_strategies[self.game.current_player].decide_dice_roll(&self.game);
     let dice_roll = match decision {
       DiceRollDecision::RollOne => (self.game.roll_one_die(), 0),
@@ -106,6 +110,8 @@ impl Engine {
 
     debug_print_dice_roll(dice_roll);
 
+    // Clone landmarks to avoid borrow checker issues
+    let active_landmarks: Vec<Landmark> = self.game.get_active_landmarks().to_vec();
     for landmark in active_landmarks.iter() {
       on_dice_roll(*landmark, &mut self.game, dice_roll);
     }
@@ -117,9 +123,10 @@ impl Engine {
   /// All cards are activated in the order of their color.
   /// Activation order: Red -> Blue and Green -> Purple -> Orange/Landmarks
   /// For red cards, pay coins in reverse order of players
-  fn earn_income_phase(&mut self, active_landmarks: &Vec<Landmark>, dice_roll_sum: u8) {
+  fn earn_income_phase(&mut self, dice_roll_sum: u8) {
     // Collect cards to activate (to avoid borrow conflicts). Vec<(card, card owner index)>
-    let mut cards_to_activate: Vec<(Card, usize)> = Vec::new();
+    // Pre-allocate with capacity for ~4 players * ~15 cards = 60 max
+    let mut cards_to_activate: Vec<(Card, usize)> = Vec::with_capacity(60);
 
     // Collect red cards (all players except the current player)
     for player_index in self.game.other_players_reverse() {
@@ -164,7 +171,7 @@ impl Engine {
   /// either buy a card or landmark, or do nothing.
   /// After the player has made their decision, the landmarks trigger their effects based on whether
   /// the player built something this turn.
-  fn buy_phase(&mut self, active_landmarks: &Vec<Landmark>) {
+  fn buy_phase(&mut self) {
     // If the player has no coins, get 1 coin from the bank
     if self.game.players[self.game.current_player].coins == 0 {
       self.game.get_coins_from_bank(self.game.current_player, 1);
@@ -191,12 +198,14 @@ impl Engine {
     }
 
     // Trigger landmark effects for turn end
+    // Clone landmarks to avoid borrow checker issues
+    let active_landmarks: Vec<Landmark> = self.game.get_active_landmarks().to_vec();
     for landmark in active_landmarks.iter() {
       on_turn_end(*landmark, &mut self.game, built_something_this_turn);
     }
   }
 
-  pub fn collect_data_for_simulation(&self) -> HashMap<Card, usize> {
+  pub fn collect_data_for_simulation(&self) -> SimulationResult {
     let winner_index = self.game.winner().expect("No winner found");
     let winner = &self.game.players[winner_index];
 
@@ -205,6 +214,10 @@ impl Engine {
       *card_counts.entry(*card).or_insert(0) += 1;
     }
 
-    card_counts
+    SimulationResult {
+      card_counts,
+      winner_index,
+      winning_round: self.game.get_round(),
+    }
   }
 }

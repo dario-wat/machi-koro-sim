@@ -28,6 +28,9 @@ pub struct Game {
   pub greater_than_6_face_up: HashMap<Card, u8>,
   pub landmark_face_up: Vec<Landmark>,
 
+  // Cached active landmarks (infinite landmarks that apply to all players)
+  active_landmarks_cache: Vec<Landmark>,
+
   // Private state describing some game aspects
   take_another_turn: bool,
 }
@@ -60,6 +63,7 @@ impl Game {
       less_than_7_face_up: HashMap::new(),
       greater_than_6_face_up: HashMap::new(),
       landmark_face_up: Vec::new(),
+      active_landmarks_cache: Vec::new(),
       take_another_turn: false,
     };
 
@@ -95,13 +99,9 @@ impl Game {
   }
 
   /// Get all active landmarks (infinite landmarks apply to all players once built)
-  pub fn get_active_landmarks(&self) -> Vec<Landmark> {
-    self
-      .players
-      .iter()
-      .flat_map(|player| player.landmarks.iter().cloned())
-      .filter(|landmark| landmark.def().landmark_type == LandmarkType::Infinite)
-      .collect()
+  /// Returns a reference to the cached list
+  pub fn get_active_landmarks(&self) -> &[Landmark] {
+    &self.active_landmarks_cache
   }
 
   pub fn advance_turn(&mut self) {
@@ -152,26 +152,32 @@ impl Game {
   /// 2. Subtract landmark cost from player's coins
   /// 3. Remove landmark from face-up landmarks
   /// 4. Refill face-up landmarks
+  /// 5. Add to active landmarks cache if infinite
   pub fn buy_landmark(&mut self, landmark: Landmark) {
     self.players[self.current_player].buy_landmark(landmark);
     if let Some(pos) = self.landmark_face_up.iter().position(|l| *l == landmark) {
       self.landmark_face_up.remove(pos);
     }
     self.refill_face_up_cards();
+
+    // Add to active landmarks cache if infinite
+    if landmark.def().landmark_type == LandmarkType::Infinite {
+      self.active_landmarks_cache.push(landmark);
+    }
   }
 
   /// Refill all face-up card areas to maintain 5 unique cards each
   fn refill_face_up_cards(&mut self) {
     while self.less_than_7_face_up.len() < 5 && !self.less_than_7_deck.is_empty() {
-      let card = self.less_than_7_deck.remove(0);
+      let card = self.less_than_7_deck.pop().unwrap();
       *self.less_than_7_face_up.entry(card).or_insert(0) += 1;
     }
     while self.greater_than_6_face_up.len() < 5 && !self.greater_than_6_deck.is_empty() {
-      let card = self.greater_than_6_deck.remove(0);
+      let card = self.greater_than_6_deck.pop().unwrap();
       *self.greater_than_6_face_up.entry(card).or_insert(0) += 1;
     }
     while self.landmark_face_up.len() < 5 && !self.landmark_deck.is_empty() {
-      let landmark = self.landmark_deck.remove(0);
+      let landmark = self.landmark_deck.pop().unwrap();
       self.landmark_face_up.push(landmark);
     }
   }

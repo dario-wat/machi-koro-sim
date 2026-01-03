@@ -7,3 +7,11 @@ edition = "2021"
 rand = "0.8"
 colored = "2.1"
 strum = { version = "0.26", features = ["derive"] }
+rayon = "1.8"
+
+[profile.release]
+opt-level = 3          # Maximum optimizations
+lto = "fat"            # Link-time optimization across all crates
+codegen-units = 1      # Better optimization, slower compile
+panic = "abort"        # Smaller binary, faster unwinding
+strip = true           # Remove debug symbols
