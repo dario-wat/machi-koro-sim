@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::{
   debug::{
     debug_print_dice_roll, debug_print_game, debug_print_purchase_decision, debug_print_winner,
@@ -192,5 +194,17 @@ impl Engine {
     for landmark in active_landmarks.iter() {
       on_turn_end(*landmark, &mut self.game, built_something_this_turn);
     }
+  }
+
+  pub fn collect_data_for_simulation(&self) -> HashMap<Card, usize> {
+    let winner_index = self.game.winner().expect("No winner found");
+    let winner = &self.game.players[winner_index];
+
+    let mut card_counts: HashMap<Card, usize> = HashMap::new();
+    for card in &winner.cards {
+      *card_counts.entry(*card).or_insert(0) += 1;
+    }
+
+    card_counts
   }
 }
