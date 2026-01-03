@@ -94,7 +94,7 @@ impl Landmark {
       Landmark::LoanOffice => LandmarkDef {
         name: "Loan Office",
         cost: &[10],
-        landmark_type: LandmarkType::Infinite,
+        landmark_type: LandmarkType::Immediate,
       },
       Landmark::MovingCompany => LandmarkDef {
         name: "Moving Company",

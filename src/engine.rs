@@ -6,7 +6,10 @@ use crate::{
     player_strategy::{DiceRollDecision, PurchaseDecision},
     PlayerStrategy,
   },
-  rules::card::activate_card,
+  rules::{
+    card::activate_card,
+    landmark::{activate_landmark, on_dice_roll, on_turn_end},
+  },
 };
 
 pub struct Engine {
@@ -35,10 +38,14 @@ impl Engine {
 
     debug_print(&self.game);
     println!("--------------------------------");
-    while self.game.winner().is_none() {
+    loop {
       self.play_turn();
       debug_print(&self.game);
       println!("--------------------------------");
+
+      if self.game.winner().is_some() {
+        break;
+      }
     }
 
     println!("Winner: {}", self.game.winner().unwrap());
@@ -67,6 +74,8 @@ impl Engine {
 
   /// Normal turn has 3 phases: Roll dice, earn income, buy card or landmark
   fn play_normal_turn(&mut self) {
+    let active_landmarks = self.game.get_active_landmarks();
+
     // Phase 1: Roll dice
     let decision = self.player_strategies[self.game.current_player].decide_dice_roll(&self.game);
     let dice_roll = match decision {
@@ -81,6 +90,9 @@ impl Engine {
         "Dice roll: {} + {} (total: {})",
         dice_roll.0, dice_roll.1, dice_roll_sum
       );
+    }
+    for landmark in active_landmarks.iter() {
+      on_dice_roll(*landmark, &mut self.game, dice_roll);
     }
     // Phase 2: Earn income (activate cards)
     // Activation order: Red -> Blue and Green -> Purple -> Orange/Landmarks
@@ -119,13 +131,27 @@ impl Engine {
     }
 
     // Phase 3: Buy card or landmark
-    // TODO Receive 1 coin at the beginning of this phase if no coins
+    if self.game.players[self.game.current_player].coins == 0 {
+      self.game.get_coins_from_bank(self.game.current_player, 1);
+    }
+
+    let mut built_something_this_turn = false;
     let decision = self.player_strategies[self.game.current_player].decide_purchase(&self.game);
     println!("{}", decision);
     match decision {
-      PurchaseDecision::BuyCard(card) => self.game.buy_card(card),
-      PurchaseDecision::BuyLandmark(landmark) => self.game.buy_landmark(landmark),
+      PurchaseDecision::BuyCard(card) => {
+        self.game.buy_card(card);
+        built_something_this_turn = true;
+      }
+      PurchaseDecision::BuyLandmark(landmark) => {
+        self.game.buy_landmark(landmark);
+        activate_landmark(landmark, &mut self.game);
+        built_something_this_turn = true;
+      }
       PurchaseDecision::BuyNothing => {}
+    }
+    for landmark in active_landmarks.iter() {
+      on_turn_end(*landmark, &mut self.game, built_something_this_turn);
     }
   }
 }

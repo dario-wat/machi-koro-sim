@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use crate::models::landmark::LandmarkType;
 use crate::models::{Card, Landmark, Player};
 use crate::rng::Rng;
 use crate::rules::card::build_greater_than_6_deck;
@@ -29,6 +30,9 @@ pub struct Game {
   pub less_than_7_face_up: HashMap<Card, u8>,
   pub greater_than_6_face_up: HashMap<Card, u8>,
   pub landmark_face_up: Vec<Landmark>,
+
+  // Private state describing some game aspects
+  take_another_turn: bool,
 }
 
 impl Game {
@@ -59,6 +63,7 @@ impl Game {
       less_than_7_face_up: HashMap::new(),
       greater_than_6_face_up: HashMap::new(),
       landmark_face_up: Vec::new(),
+      take_another_turn: false,
     };
 
     // Initialize face-up cards (5 for each deck)
@@ -92,9 +97,28 @@ impl Game {
     self.players[self.current_player].can_afford_landmark(landmark)
   }
 
+  /// Get all active landmarks (infinite landmarks apply to all players once built)
+  pub fn get_active_landmarks(&self) -> Vec<Landmark> {
+    self
+      .players
+      .iter()
+      .flat_map(|player| player.landmarks.iter().cloned())
+      .filter(|landmark| landmark.def().landmark_type == LandmarkType::Infinite)
+      .collect()
+  }
+
   pub fn advance_turn(&mut self) {
+    if self.take_another_turn {
+      self.take_another_turn = false;
+      return;
+    }
     self.current_player = (self.current_player + 1) % self.players.len();
     self.current_turn += 1;
+  }
+
+  /// Reverts the current turn so that the current player can take another turn
+  pub fn take_another_turn_after_this_one(&mut self) {
+    self.take_another_turn = true;
   }
 
   pub fn roll_one_die(&mut self) -> u8 {
