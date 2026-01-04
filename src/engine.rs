@@ -172,6 +172,8 @@ impl Engine {
     LandmarkRules::on_after_card_activation(&mut self.game, coins_received);
   }
 
+  // TODO ensure player can only own 1 purple card of each type
+
   /// Phase 3: Buy card or landmark
   /// If the player has no coins, get 1 coin from the bank. The player then also chooses to
   /// either buy a card or landmark, or do nothing.

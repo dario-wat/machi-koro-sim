@@ -4,6 +4,7 @@ use super::landmark::Landmark;
 #[derive(Clone)]
 pub struct Player {
   pub coins: u16,
+  // TODO maybe represent cards as a HashMap<Card, usize>
   pub cards: Vec<Card>,
   pub landmarks: Vec<Landmark>,
 }

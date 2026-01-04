@@ -1,5 +1,7 @@
 use std::fmt;
 
+use strum::EnumIter;
+
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum CardColor {
   Blue,
@@ -55,7 +57,7 @@ pub struct CardDef {
   pub category: CardCategory,
 }
 
-#[derive(Clone, Copy, Debug, Hash, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Hash, PartialEq, Eq, EnumIter)]
 pub enum Card {
   SushiBar,
   WheatField,
