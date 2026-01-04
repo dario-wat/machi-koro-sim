@@ -49,12 +49,48 @@ impl fmt::Display for CardCategory {
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
+pub enum CardEffect {
+  TakeCoinsFromActivePlayer(u16),
+  TakeCoinsFromEachOpponent(u16),
+  TakeCoinsFromEachOpponentWithMoreThan10Coins,
+  GetCoinsFromBank(u16),
+  GetCoinsFromBankForEachCardCategory(u16, CardCategory),
+  GetCoinsFromBankForEachCardColor(u16, CardColor),
+  ExchangeEstablishment,
+}
+
+impl fmt::Display for CardEffect {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    match self {
+      CardEffect::TakeCoinsFromActivePlayer(amount) => {
+        write!(f, "Take {}C from active", amount)
+      }
+      CardEffect::TakeCoinsFromEachOpponent(amount) => {
+        write!(f, "Take {}C from others", amount)
+      }
+      CardEffect::TakeCoinsFromEachOpponentWithMoreThan10Coins => {
+        write!(f, "Take 1/2 from >10C")
+      }
+      CardEffect::GetCoinsFromBank(amount) => write!(f, "Get {}C", amount),
+      CardEffect::GetCoinsFromBankForEachCardCategory(amount, category) => {
+        write!(f, "{}C per {}", amount, category)
+      }
+      CardEffect::GetCoinsFromBankForEachCardColor(amount, color) => {
+        write!(f, "{}C per {}", amount, color)
+      }
+      CardEffect::ExchangeEstablishment => write!(f, "Exchange est."),
+    }
+  }
+}
+
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct CardDef {
   pub name: &'static str,
   pub cost: u16,
   pub activation: &'static [u8],
   pub color: CardColor,
   pub category: CardCategory,
+  pub effect: CardEffect,
 }
 
 #[derive(Clone, Copy, Debug, Hash, PartialEq, Eq, EnumIter)]
@@ -90,6 +126,7 @@ impl Card {
         activation: &[1],
         color: CardColor::Red,
         category: CardCategory::Cup,
+        effect: CardEffect::TakeCoinsFromActivePlayer(3),
       },
       Card::WheatField => CardDef {
         name: "Wheat Field",
@@ -97,6 +134,7 @@ impl Card {
         activation: &[1, 2],
         color: CardColor::Blue,
         category: CardCategory::Wheat,
+        effect: CardEffect::GetCoinsFromBank(1),
       },
       Card::Vineyard => CardDef {
         name: "Vineyard",
@@ -104,6 +142,7 @@ impl Card {
         activation: &[1, 2],
         color: CardColor::Blue,
         category: CardCategory::Fruit,
+        effect: CardEffect::GetCoinsFromBank(2),
       },
       Card::Bakery => CardDef {
         name: "Bakery",
@@ -111,6 +150,7 @@ impl Card {
         activation: &[2, 3],
         color: CardColor::Green,
         category: CardCategory::Bread,
+        effect: CardEffect::GetCoinsFromBank(2),
       },
       Card::Cafe => CardDef {
         name: "Cafe",
@@ -118,6 +158,7 @@ impl Card {
         activation: &[3],
         color: CardColor::Red,
         category: CardCategory::Cup,
+        effect: CardEffect::TakeCoinsFromActivePlayer(2),
       },
       Card::FlowerGarden => CardDef {
         name: "Flower Garden",
@@ -125,6 +166,7 @@ impl Card {
         activation: &[4],
         color: CardColor::Blue,
         category: CardCategory::Flower,
+        effect: CardEffect::GetCoinsFromBank(2),
       },
       Card::ConvenienceStore => CardDef {
         name: "Convenience Store",
@@ -132,6 +174,7 @@ impl Card {
         activation: &[4],
         color: CardColor::Green,
         category: CardCategory::Bread,
+        effect: CardEffect::GetCoinsFromBank(3),
       },
       Card::Forest => CardDef {
         name: "Forest",
@@ -139,6 +182,7 @@ impl Card {
         activation: &[5],
         color: CardColor::Blue,
         category: CardCategory::Gear,
+        effect: CardEffect::GetCoinsFromBank(2),
       },
       Card::CornField => CardDef {
         name: "Corn Field",
@@ -146,6 +190,7 @@ impl Card {
         activation: &[7],
         color: CardColor::Blue,
         category: CardCategory::Wheat,
+        effect: CardEffect::GetCoinsFromBank(3),
       },
       Card::HamburgerStand => CardDef {
         name: "Hamburger Stand",
@@ -153,6 +198,7 @@ impl Card {
         activation: &[8],
         color: CardColor::Red,
         category: CardCategory::Cup,
+        effect: CardEffect::TakeCoinsFromActivePlayer(2),
       },
       Card::FamilyRestaurant => CardDef {
         name: "Family Restaurant",
@@ -160,6 +206,7 @@ impl Card {
         activation: &[9, 10],
         color: CardColor::Red,
         category: CardCategory::Cup,
+        effect: CardEffect::TakeCoinsFromActivePlayer(2),
       },
       Card::AppleOrchard => CardDef {
         name: "Apple Orchard",
@@ -167,6 +214,7 @@ impl Card {
         activation: &[10],
         color: CardColor::Blue,
         category: CardCategory::Fruit,
+        effect: CardEffect::GetCoinsFromBank(3),
       },
       Card::Mine => CardDef {
         name: "Mine",
@@ -174,6 +222,7 @@ impl Card {
         activation: &[11, 12],
         color: CardColor::Blue,
         category: CardCategory::Gear,
+        effect: CardEffect::GetCoinsFromBank(6),
       },
       Card::FlowerShop => CardDef {
         name: "Flower Shop",
@@ -181,6 +230,7 @@ impl Card {
         activation: &[6],
         color: CardColor::Green,
         category: CardCategory::Combo,
+        effect: CardEffect::GetCoinsFromBankForEachCardCategory(3, CardCategory::Flower),
       },
       Card::BusinessCenter => CardDef {
         name: "Business Center",
@@ -188,6 +238,7 @@ impl Card {
         activation: &[6],
         color: CardColor::Purple,
         category: CardCategory::Building,
+        effect: CardEffect::ExchangeEstablishment,
       },
       Card::Stadium => CardDef {
         name: "Stadium",
@@ -195,6 +246,7 @@ impl Card {
         activation: &[7],
         color: CardColor::Purple,
         category: CardCategory::Building,
+        effect: CardEffect::TakeCoinsFromEachOpponent(3),
       },
       Card::FurnitureFactory => CardDef {
         name: "Furniture Factory",
@@ -202,6 +254,7 @@ impl Card {
         activation: &[8],
         color: CardColor::Green,
         category: CardCategory::Combo,
+        effect: CardEffect::GetCoinsFromBankForEachCardColor(4, CardColor::Green),
       },
       Card::ShoppingDistrict => CardDef {
         name: "Shopping District",
@@ -209,6 +262,7 @@ impl Card {
         activation: &[8, 9],
         color: CardColor::Purple,
         category: CardCategory::Building,
+        effect: CardEffect::TakeCoinsFromEachOpponentWithMoreThan10Coins,
       },
       Card::Winery => CardDef {
         name: "Winery",
@@ -216,6 +270,7 @@ impl Card {
         activation: &[9],
         color: CardColor::Green,
         category: CardCategory::Combo,
+        effect: CardEffect::GetCoinsFromBankForEachCardCategory(3, CardCategory::Fruit),
       },
       Card::FoodWarehouse => CardDef {
         name: "Food Warehouse",
@@ -223,6 +278,7 @@ impl Card {
         activation: &[10, 11],
         color: CardColor::Green,
         category: CardCategory::Combo,
+        effect: CardEffect::GetCoinsFromBankForEachCardCategory(2, CardCategory::Cup),
       },
     }
   }

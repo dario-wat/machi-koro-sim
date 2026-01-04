@@ -1,4 +1,5 @@
 use crate::game::Game;
+use crate::models::card::CardEffect;
 use crate::models::{Card, CardCategory, CardColor, CardDef};
 use crate::player_strategies::player_strategy::ExchangeEstablishmentDecision;
 use crate::player_strategies::PlayerStrategy;
@@ -9,66 +10,27 @@ pub fn activate_card(
   owner_index: usize,
   player_strategy: &mut dyn PlayerStrategy,
 ) {
-  match card {
-    Card::SushiBar => {
-      game.take_coins_from_active_player(owner_index, 3);
+  let def = card.def();
+  match def.effect {
+    CardEffect::TakeCoinsFromActivePlayer(amount) => {
+      game.take_coins_from_active_player(owner_index, amount);
     }
-
-    Card::WheatField => {
-      game.get_coins_from_bank(owner_index, 1);
+    CardEffect::TakeCoinsFromEachOpponent(amount) => {
+      game.take_coins_from_each_opponent(owner_index, amount);
     }
-
-    Card::Vineyard => {
-      game.get_coins_from_bank(owner_index, 2);
+    CardEffect::TakeCoinsFromEachOpponentWithMoreThan10Coins => {
+      game.take_coins_from_opponents_with_more_than_10_coins(owner_index);
     }
-
-    Card::Bakery => {
-      game.get_coins_from_bank(owner_index, 2);
+    CardEffect::GetCoinsFromBank(amount) => {
+      game.get_coins_from_bank(owner_index, amount);
     }
-
-    Card::Cafe => {
-      game.take_coins_from_active_player(owner_index, 2);
+    CardEffect::GetCoinsFromBankForEachCardCategory(amount, category) => {
+      game.get_coins_from_bank_for_each_card_category(owner_index, amount, category);
     }
-
-    Card::FlowerGarden => {
-      game.get_coins_from_bank(owner_index, 2);
+    CardEffect::GetCoinsFromBankForEachCardColor(amount, color) => {
+      game.get_coins_from_bank_for_each_card_color(owner_index, amount, color);
     }
-
-    Card::ConvenienceStore => {
-      game.get_coins_from_bank(owner_index, 3);
-    }
-
-    Card::Forest => {
-      game.get_coins_from_bank(owner_index, 2);
-    }
-
-    Card::CornField => {
-      game.get_coins_from_bank(owner_index, 3);
-    }
-
-    Card::HamburgerStand => {
-      game.take_coins_from_active_player(owner_index, 2);
-    }
-
-    Card::FamilyRestaurant => {
-      game.take_coins_from_active_player(owner_index, 2);
-    }
-
-    Card::AppleOrchard => {
-      game.get_coins_from_bank(owner_index, 3);
-    }
-
-    Card::Mine => {
-      game.get_coins_from_bank(owner_index, 6);
-    }
-
-    Card::FlowerShop => {
-      game.get_coins_from_bank_for_each_card(owner_index, 3, |card_def| {
-        card_def.category == CardCategory::Flower
-      });
-    }
-
-    Card::BusinessCenter => {
+    CardEffect::ExchangeEstablishment => {
       let decision = player_strategy.decide_exchange_establishment(game);
       match decision {
         ExchangeEstablishmentDecision::Exchange(card, opponent_index, opponent_card) => {
@@ -76,32 +38,6 @@ pub fn activate_card(
         }
         ExchangeEstablishmentDecision::NoExchange => {}
       }
-    }
-
-    Card::Stadium => {
-      game.take_coins_from_each_opponent(owner_index, 3);
-    }
-
-    Card::FurnitureFactory => {
-      game.get_coins_from_bank_for_each_card(owner_index, 4, |card_def| {
-        card_def.color == CardColor::Green
-      });
-    }
-
-    Card::ShoppingDistrict => {
-      game.take_coins_from_opponents_with_more_than_10_coins(owner_index);
-    }
-
-    Card::Winery => {
-      game.get_coins_from_bank_for_each_card(owner_index, 3, |card_def| {
-        card_def.category == CardCategory::Fruit
-      });
-    }
-
-    Card::FoodWarehouse => {
-      game.get_coins_from_bank_for_each_card(owner_index, 2, |card_def| {
-        card_def.category == CardCategory::Cup
-      });
     }
   }
 }

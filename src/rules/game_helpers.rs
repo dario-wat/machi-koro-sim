@@ -1,5 +1,5 @@
 use crate::game::Game;
-use crate::models::{Card, CardDef};
+use crate::models::{Card, CardCategory, CardColor, CardDef};
 
 /// Shared helper methods for modifying game state
 /// Used by both card and landmark rules
@@ -10,16 +10,32 @@ impl Game {
   }
 
   #[inline]
-  pub fn get_coins_from_bank_for_each_card(
+  pub fn get_coins_from_bank_for_each_card_category(
     &mut self,
     owner_index: usize,
     amount: u16,
-    predicate: fn(&CardDef) -> bool,
+    category: CardCategory,
   ) {
     let coins_to_get: u16 = self.players[owner_index]
       .cards
       .iter()
-      .filter(|card| predicate(&card.def()))
+      .filter(|card| card.def().category == category)
+      .map(|_card| amount)
+      .sum();
+    self.players[owner_index].coins += coins_to_get;
+  }
+
+  #[inline]
+  pub fn get_coins_from_bank_for_each_card_color(
+    &mut self,
+    owner_index: usize,
+    amount: u16,
+    color: CardColor,
+  ) {
+    let coins_to_get: u16 = self.players[owner_index]
+      .cards
+      .iter()
+      .filter(|card| card.def().color == color)
       .map(|_card| amount)
       .sum();
     self.players[owner_index].coins += coins_to_get;
