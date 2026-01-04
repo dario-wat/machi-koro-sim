@@ -83,7 +83,7 @@ impl Game {
         || player
           .landmarks
           .iter()
-          .any(|landmark| *landmark == Landmark::LaunchPad)
+          .any(|landmark| landmark.landmark == Landmark::LaunchPad)
       {
         return Some(index);
       }
@@ -132,7 +132,8 @@ impl Game {
   /// 3. Remove card from face-up cards
   /// 4. Refill face-up cards
   pub fn buy_card(&mut self, card: Card) {
-    self.players[self.current_player].buy_card(card);
+    let bought_round = self.get_round() as u8;
+    self.players[self.current_player].buy_card(card, bought_round);
 
     if let Some(count) = self.less_than_7_face_up.get_mut(&card) {
       *count -= 1;
@@ -155,7 +156,8 @@ impl Game {
   /// 4. Refill face-up landmarks
   /// 5. Add to active landmarks cache if infinite
   pub fn buy_landmark(&mut self, landmark: Landmark) {
-    self.players[self.current_player].buy_landmark(landmark);
+    let bought_round = self.get_round() as u8;
+    self.players[self.current_player].buy_landmark(landmark, bought_round);
     if let Some(pos) = self.landmark_face_up.iter().position(|l| *l == landmark) {
       self.landmark_face_up.remove(pos);
     }

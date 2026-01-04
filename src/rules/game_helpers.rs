@@ -1,4 +1,5 @@
 use crate::game::Game;
+use crate::models::player::OwnedCard;
 use crate::models::{Card, CardCategory, CardColor, CardDef};
 
 /// Shared helper methods for modifying game state
@@ -19,7 +20,7 @@ impl Game {
     let coins_to_get: u16 = self.players[owner_index]
       .cards
       .iter()
-      .filter(|card| card.def().category == category)
+      .filter(|OwnedCard { card, .. }| card.def().category == category)
       .map(|_card| amount)
       .sum();
     self.players[owner_index].coins += coins_to_get;
@@ -35,7 +36,7 @@ impl Game {
     let coins_to_get: u16 = self.players[owner_index]
       .cards
       .iter()
-      .filter(|card| card.def().color == color)
+      .filter(|OwnedCard { card, .. }| card.def().color == color)
       .map(|_card| amount)
       .sum();
     self.players[owner_index].coins += coins_to_get;
@@ -105,7 +106,7 @@ impl Game {
         let coins_to_take = self.players[player_index]
           .cards
           .iter()
-          .filter(|card| predicate(&card.def()))
+          .filter(|OwnedCard { card, .. }| predicate(&card.def()))
           .map(|_card| amount)
           .sum();
         self.move_coins_between_players(player_index, owner_index, coins_to_take);
@@ -114,14 +115,19 @@ impl Game {
   }
 
   #[inline]
-  fn move_cards_between_players(&mut self, from_index: usize, to_index: usize, card: Card) {
+  fn move_cards_between_players(&mut self, from_index: usize, to_index: usize, card_to_move: Card) {
     let card_index = self.players[from_index]
       .cards
       .iter()
-      .position(|c| *c == card)
+      .position(|OwnedCard { card, .. }| *card == card_to_move)
       .unwrap();
     self.players[from_index].cards.remove(card_index);
-    self.players[to_index].cards.push(card);
+
+    let bought_round = self.get_round() as u8;
+    self.players[to_index].cards.push(OwnedCard {
+      card: card_to_move,
+      bought_round, // TODO moved round
+    });
   }
 
   #[inline]

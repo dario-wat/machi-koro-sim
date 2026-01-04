@@ -54,7 +54,7 @@ impl Game {
     for (index, player) in self.players.iter().enumerate() {
       if index != self.current_player {
         for card in player.cards.iter() {
-          cards.push((*card, index));
+          cards.push((card.card, index));
         }
       }
     }

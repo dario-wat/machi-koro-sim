@@ -1,4 +1,5 @@
 use crate::game::Game;
+use crate::models::player::OwnedCard;
 use crate::player_strategies::player_strategy::{
   DiceRollDecision, ExchangeEstablishmentDecision, GiveEstablishmentDecision, PlayerStrategy,
   PurchaseDecision,
@@ -59,7 +60,10 @@ impl PlayerStrategy for RandomStrategy {
       return ExchangeEstablishmentDecision::NoExchange;
     }
 
-    let card_to_exchange = current_player.cards[choice_index];
+    let OwnedCard {
+      card: card_to_exchange,
+      ..
+    } = current_player.cards[choice_index];
 
     let (opponent_card, opponent_index) =
       *game.get_opponents_cards().choose(&mut self.rng).unwrap();
@@ -73,11 +77,10 @@ impl PlayerStrategy for RandomStrategy {
       return GiveEstablishmentDecision::NoGive;
     }
 
-    GiveEstablishmentDecision::Give(
-      *game.players[game.current_player]
-        .cards
-        .choose(&mut self.rng)
-        .unwrap(),
-    )
+    let owned_card = game.players[game.current_player]
+      .cards
+      .choose(&mut self.rng)
+      .unwrap();
+    GiveEstablishmentDecision::Give(owned_card.card)
   }
 }

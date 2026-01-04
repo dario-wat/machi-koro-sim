@@ -5,7 +5,7 @@ use crate::{
     debug_print_dice_roll, debug_print_game, debug_print_purchase_decision, debug_print_winner,
   },
   game::Game,
-  models::{Card, CardColor, Landmark, Player},
+  models::{player::OwnedCard, Card, CardColor, Landmark, Player},
   player_strategies::{
     player_strategy::{DiceRollDecision, PurchaseDecision},
     PlayerStrategy,
@@ -127,7 +127,7 @@ impl Engine {
 
     // Collect red cards (all players except the current player)
     for player_index in self.game.other_players_reverse() {
-      for card in self.game.players[player_index].cards.iter() {
+      for OwnedCard { card, .. } in self.game.players[player_index].cards.iter() {
         if card.def().color == CardColor::Red && card.def().activation.contains(&dice_roll_sum) {
           cards_to_activate.push((*card, player_index));
         }
@@ -136,7 +136,7 @@ impl Engine {
 
     // Collect blue cards (all players)
     for (player_index, player) in self.game.players.iter().enumerate() {
-      for card in player.cards.iter() {
+      for OwnedCard { card, .. } in player.cards.iter() {
         if card.def().color == CardColor::Blue && card.def().activation.contains(&dice_roll_sum) {
           cards_to_activate.push((*card, player_index));
         }
@@ -144,14 +144,14 @@ impl Engine {
     }
 
     // Collect green cards (current player)
-    for card in self.game.players[self.game.current_player].cards.iter() {
+    for OwnedCard { card, .. } in self.game.players[self.game.current_player].cards.iter() {
       if card.def().color == CardColor::Green && card.def().activation.contains(&dice_roll_sum) {
         cards_to_activate.push((*card, self.game.current_player));
       }
     }
 
     // Collect purple cards (current player)
-    for card in self.game.players[self.game.current_player].cards.iter() {
+    for OwnedCard { card, .. } in self.game.players[self.game.current_player].cards.iter() {
       if card.def().color == CardColor::Purple && card.def().activation.contains(&dice_roll_sum) {
         cards_to_activate.push((*card, self.game.current_player));
       }

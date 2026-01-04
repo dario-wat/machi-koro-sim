@@ -2,11 +2,22 @@ use super::card::Card;
 use super::landmark::Landmark;
 
 #[derive(Clone)]
+pub struct OwnedCard {
+  pub card: Card,
+  pub bought_round: u8,
+}
+
+#[derive(Clone)]
+pub struct OwnedLandmark {
+  pub landmark: Landmark,
+  pub bought_round: u8,
+}
+
+#[derive(Clone)]
 pub struct Player {
   pub coins: u16,
-  // TODO maybe represent cards as a HashMap<Card, usize>
-  pub cards: Vec<Card>,
-  pub landmarks: Vec<Landmark>,
+  pub cards: Vec<OwnedCard>,
+  pub landmarks: Vec<OwnedLandmark>,
 }
 
 impl Player {
@@ -29,19 +40,22 @@ impl Player {
     self.coins >= landmark.def().cost[self.landmarks.len()]
   }
 
-  pub fn buy_card(&mut self, card: Card) {
+  pub fn buy_card(&mut self, card: Card, bought_round: u8) {
     if !self.can_afford_card(&card) {
       panic!("Player cannot afford card");
     }
-    self.cards.push(card);
+    self.cards.push(OwnedCard { card, bought_round });
     self.coins -= card.def().cost;
   }
 
-  pub fn buy_landmark(&mut self, landmark: Landmark) {
+  pub fn buy_landmark(&mut self, landmark: Landmark, bought_round: u8) {
     if !self.can_afford_landmark(&landmark) {
       panic!("Player cannot afford landmark");
     }
     self.coins -= landmark.def().cost[self.landmarks.len()];
-    self.landmarks.push(landmark);
+    self.landmarks.push(OwnedLandmark {
+      landmark,
+      bought_round,
+    });
   }
 }
