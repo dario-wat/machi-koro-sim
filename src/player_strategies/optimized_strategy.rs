@@ -2,7 +2,9 @@ use rand::rngs::StdRng;
 use rand::seq::SliceRandom;
 use rand::{Rng, SeedableRng};
 
-use crate::player_strategies::player_strategy::ExchangeEstablishmentDecision;
+use crate::player_strategies::player_strategy::{
+  ExchangeEstablishmentDecision, GiveEstablishmentDecision,
+};
 use crate::{
   game::Game,
   player_strategies::{
@@ -40,5 +42,10 @@ impl PlayerStrategy for OptimizedStrategy {
   // TODO placeholder
   fn decide_exchange_establishment(&mut self, game: &Game) -> ExchangeEstablishmentDecision {
     ExchangeEstablishmentDecision::NoExchange
+  }
+
+  // TODO placeholder
+  fn decide_give_establishment(&mut self, game: &Game) -> GiveEstablishmentDecision {
+    GiveEstablishmentDecision::NoGive
   }
 }

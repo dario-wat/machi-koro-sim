@@ -8,6 +8,7 @@ mod optimization;
 mod player_strategies;
 mod rng;
 mod rules;
+mod simulation;
 
 use std::collections::HashMap;
 
@@ -53,7 +54,7 @@ fn main() {
   // Aggregate card counts
   let mut total_card_counts: HashMap<Card, usize> = HashMap::new();
   for result in &results {
-    for (card, count) in result.card_counts.iter() {
+    for (card, count) in result.winner_card_counts.iter() {
       *total_card_counts.entry(*card).or_insert(0) += count;
     }
   }

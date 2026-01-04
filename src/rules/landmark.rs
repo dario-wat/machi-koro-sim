@@ -1,5 +1,7 @@
 use crate::game::Game;
 use crate::models::{CardCategory, Landmark};
+use crate::player_strategies::player_strategy::GiveEstablishmentDecision;
+use crate::player_strategies::PlayerStrategy;
 use strum::IntoEnumIterator;
 
 /// Activate immediate landmarks (one-time effects when built)
@@ -49,7 +51,6 @@ pub fn get_card_earnings_bonus(landmark: Landmark, card_category: CardCategory) 
       }
     }
     Landmark::Forge => {
-      // gear establishments earn +1 coin
       if card_category == CardCategory::Gear {
         1
       } else {
@@ -57,7 +58,6 @@ pub fn get_card_earnings_bonus(landmark: Landmark, card_category: CardCategory) 
       }
     }
     Landmark::SodaBottlingPlant => {
-      // your cup cards earn +1 coin when activated
       if card_category == CardCategory::Cup {
         1
       } else {
@@ -65,7 +65,6 @@ pub fn get_card_earnings_bonus(landmark: Landmark, card_category: CardCategory) 
       }
     }
     Landmark::ShoppingMall => {
-      // your bread cards earn +1 coin when activated
       if card_category == CardCategory::Bread {
         1
       } else {
@@ -77,7 +76,12 @@ pub fn get_card_earnings_bonus(landmark: Landmark, card_category: CardCategory) 
 }
 
 /// Handle trigger-based effects on dice roll
-pub fn on_dice_roll(landmark: Landmark, game: &mut Game, roll: (u8, u8)) {
+pub fn on_dice_roll(
+  landmark: Landmark,
+  game: &mut Game,
+  roll: (u8, u8),
+  player_strategy: &mut dyn PlayerStrategy,
+) {
   let (roll1, roll2) = roll;
   let is_doubles = roll1 == roll2;
 
@@ -88,7 +92,13 @@ pub fn on_dice_roll(landmark: Landmark, game: &mut Game, roll: (u8, u8)) {
       }
     }
     Landmark::MovingCompany => {
-      // if you roll doubles, give 1 of your establishments to the player on the right
+      if is_doubles {
+        let decision = player_strategy.decide_give_establishment(game);
+        match decision {
+          GiveEstablishmentDecision::Give(card) => game.give_establishment_to_right(card),
+          GiveEstablishmentDecision::NoGive => {}
+        }
+      }
     }
     Landmark::TechStartup => {
       if roll1 + roll2 == 12 {
@@ -104,30 +114,27 @@ pub fn on_dice_roll(landmark: Landmark, game: &mut Game, roll: (u8, u8)) {
   }
 }
 
-// TODO maybe better handling of extra state
-/// Handle trigger-based effects at turn end
-pub fn on_turn_end(landmark: Landmark, game: &mut Game, built_something: bool) {
-  match landmark {
-    Landmark::Airport => {
-      if !built_something {
-        game.get_coins_from_bank(game.current_player, 5);
-      }
-    }
-    _ => {}
+/// Handle trigger-based effects at turn end.
+/// Special handling for Airport landmark
+pub fn on_turn_end(game: &mut Game, built_something: bool) {
+  if built_something && game.get_active_landmarks().contains(&Landmark::Airport) {
+    game.get_coins_from_bank(game.current_player, 5);
+  }
+}
+
+/// Handle trigger-based effects after card activation
+/// Special handling for Charterhouse landmark
+pub fn on_after_card_activation(game: &mut Game, coins_received: bool) {
+  if coins_received
+    && game
+      .get_active_landmarks()
+      .contains(&Landmark::Charterhouse)
+  {
+    game.get_coins_from_bank(game.current_player, 3);
   }
 }
 
 // TODO use this
-/// Handle trigger-based effects after card activation
-pub fn on_after_card_activation(landmark: Landmark, game: &mut Game, coins_received: u8) {
-  match landmark {
-    Landmark::Charterhouse => {
-      // if you roll two dice and receive no coins, get 3 coins from the bank
-    }
-    _ => {}
-  }
-}
-
 /// Get landmark build cost reduction
 pub fn get_landmark_cost_reduction(landmark: Landmark, target_landmark: Landmark) -> u8 {
   match landmark {

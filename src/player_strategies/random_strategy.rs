@@ -1,6 +1,7 @@
 use crate::game::Game;
 use crate::player_strategies::player_strategy::{
-  DiceRollDecision, ExchangeEstablishmentDecision, PlayerStrategy, PurchaseDecision,
+  DiceRollDecision, ExchangeEstablishmentDecision, GiveEstablishmentDecision, PlayerStrategy,
+  PurchaseDecision,
 };
 use rand::rngs::StdRng;
 use rand::seq::SliceRandom;
@@ -64,5 +65,19 @@ impl PlayerStrategy for RandomStrategy {
       *game.get_opponents_cards().choose(&mut self.rng).unwrap();
 
     ExchangeEstablishmentDecision::Exchange(card_to_exchange, opponent_index, opponent_card)
+  }
+
+  /// Player chooses a random card of their own to give.
+  fn decide_give_establishment(&mut self, game: &Game) -> GiveEstablishmentDecision {
+    if game.players[game.current_player].cards.is_empty() {
+      return GiveEstablishmentDecision::NoGive;
+    }
+
+    GiveEstablishmentDecision::Give(
+      *game.players[game.current_player]
+        .cards
+        .choose(&mut self.rng)
+        .unwrap(),
+    )
   }
 }

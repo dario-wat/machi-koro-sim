@@ -56,10 +56,25 @@ impl fmt::Display for ExchangeEstablishmentDecision {
   }
 }
 
+pub enum GiveEstablishmentDecision {
+  Give(Card),
+  NoGive, // Should only happen when player has no cards which should happen very rarely
+}
+
+impl fmt::Display for GiveEstablishmentDecision {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    match self {
+      GiveEstablishmentDecision::Give(card) => write!(f, "Give: {}", card.def().name),
+      GiveEstablishmentDecision::NoGive => write!(f, "No Give"),
+    }
+  }
+}
+
 /// Trait (interface) that all player strategies must implement
 /// This defines the contract that any player strategy must fulfill
 pub trait PlayerStrategy {
   fn decide_dice_roll(&mut self, game: &Game) -> DiceRollDecision;
   fn decide_purchase(&mut self, game: &Game) -> PurchaseDecision;
   fn decide_exchange_establishment(&mut self, game: &Game) -> ExchangeEstablishmentDecision;
+  fn decide_give_establishment(&mut self, game: &Game) -> GiveEstablishmentDecision;
 }

@@ -113,4 +113,13 @@ impl Game {
     self.move_cards_between_players(self.current_player as usize, opponent_index, card);
     self.move_cards_between_players(opponent_index, self.current_player as usize, opponent_card);
   }
+
+  #[inline]
+  pub fn give_establishment_to_right(&mut self, card: Card) {
+    self.move_cards_between_players(
+      self.current_player as usize,
+      (self.players.len() + self.current_player - 1) % self.players.len(),
+      card,
+    );
+  }
 }

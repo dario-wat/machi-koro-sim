@@ -10,10 +10,7 @@ use crate::{
     player_strategy::{DiceRollDecision, PurchaseDecision},
     PlayerStrategy,
   },
-  rules::{
-    card::activate_card,
-    landmark::{activate_landmark, on_dice_roll, on_turn_end},
-  },
+  rules::{card::activate_card, landmark as LandmarkRules},
 };
 
 const BUY_ONLY_TURNS: usize = 3;
@@ -21,14 +18,8 @@ const MIN_PLAYERS: usize = 2;
 const MAX_PLAYERS: usize = 4;
 
 pub struct Engine {
-  game: Game,
-  player_strategies: Vec<Box<dyn PlayerStrategy>>,
-}
-
-pub struct SimulationResult {
-  pub card_counts: HashMap<Card, usize>,
-  pub winner_index: usize,
-  pub winning_round: usize,
+  pub game: Game,
+  pub player_strategies: Vec<Box<dyn PlayerStrategy>>,
 }
 
 impl Engine {
@@ -102,7 +93,8 @@ impl Engine {
   /// In this phase, the player chooses to roll either one or two dice.
   /// The landmarks then trigger their effects based on the dice roll.
   fn roll_dice_phase(&mut self) -> u8 {
-    let decision = self.player_strategies[self.game.current_player].decide_dice_roll(&self.game);
+    let current_player = self.game.current_player;
+    let decision = self.player_strategies[current_player].decide_dice_roll(&self.game);
     let dice_roll = match decision {
       DiceRollDecision::RollOne => (self.game.roll_one_die(), 0),
       DiceRollDecision::RollTwo => self.game.roll_two_dice(),
@@ -113,7 +105,12 @@ impl Engine {
     // Clone landmarks to avoid borrow checker issues
     let active_landmarks: Vec<Landmark> = self.game.get_active_landmarks().to_vec();
     for landmark in active_landmarks.iter() {
-      on_dice_roll(*landmark, &mut self.game, dice_roll);
+      LandmarkRules::on_dice_roll(
+        *landmark,
+        &mut self.game,
+        dice_roll,
+        &mut *self.player_strategies[current_player],
+      );
     }
 
     dice_roll.0 + dice_roll.1
@@ -161,14 +158,18 @@ impl Engine {
     }
 
     // Activate collected cards
+    let mut coins_received = false;
     for (card, player_index) in cards_to_activate {
+      let coins_before = self.game.players[player_index].coins;
       activate_card(
         card,
         &mut self.game,
         player_index,
         &mut *self.player_strategies[player_index],
       );
+      coins_received |= coins_before < self.game.players[player_index].coins;
     }
+    LandmarkRules::on_after_card_activation(&mut self.game, coins_received);
   }
 
   /// Phase 3: Buy card or landmark
@@ -197,33 +198,11 @@ impl Engine {
         built_something_this_turn = true;
 
         // Activate built landmark
-        activate_landmark(landmark, &mut self.game);
+        LandmarkRules::activate_landmark(landmark, &mut self.game);
       }
       PurchaseDecision::BuyNothing => {}
     }
 
-    // Trigger landmark effects for turn end
-    // Clone landmarks to avoid borrow checker issues
-    let active_landmarks: Vec<Landmark> = self.game.get_active_landmarks().to_vec();
-    for landmark in active_landmarks.iter() {
-      on_turn_end(*landmark, &mut self.game, built_something_this_turn);
-    }
-  }
-
-  // TODO this should be moved somewhere else
-  pub fn collect_data_for_simulation(&self) -> SimulationResult {
-    let winner_index = self.game.winner().expect("No winner found");
-    let winner = &self.game.players[winner_index];
-
-    let mut card_counts: HashMap<Card, usize> = HashMap::new();
-    for card in &winner.cards {
-      *card_counts.entry(*card).or_insert(0) += 1;
-    }
-
-    SimulationResult {
-      card_counts,
-      winner_index,
-      winning_round: self.game.get_round(),
-    }
+    LandmarkRules::on_turn_end(&mut self.game, built_something_this_turn);
   }
 }
