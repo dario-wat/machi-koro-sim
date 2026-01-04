@@ -2,6 +2,7 @@ use rand::rngs::StdRng;
 use rand::seq::SliceRandom;
 use rand::{Rng as RandRng, SeedableRng};
 
+#[derive(Clone)]
 pub struct Rng {
   rng: StdRng,
   seed: u64,

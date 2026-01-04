@@ -14,7 +14,9 @@ use std::collections::HashMap;
 use rayon::prelude::*;
 
 use crate::{
-  debug::{debug_print_card_counts, debug_print_simulation_results},
+  debug::{
+    debug_print_card_counts_stats, debug_print_round_statistics, debug_print_winner_distribution,
+  },
   engine::Engine,
   models::Card,
   player_strategies::RandomStrategy,
@@ -56,12 +58,6 @@ fn main() {
     }
   }
 
-  // Aggregate round statistics
-  let total_rounds: usize = results.iter().map(|r| r.winning_round).sum();
-  let min_round = results.iter().map(|r| r.winning_round).min().unwrap_or(0);
-  let max_round = results.iter().map(|r| r.winning_round).max().unwrap_or(0);
-  let avg_round = total_rounds as f64 / sim_count as f64;
-
   // Round distribution
   let mut round_distribution: HashMap<usize, usize> = HashMap::new();
   for result in &results {
@@ -76,52 +72,11 @@ fn main() {
 
   let elapsed = start_time.elapsed();
   println!("Simulations completed in {:.2?}", elapsed);
-  // println!();
-  // println!("Winning Round Statistics:");
-  // println!("  Average: {:.2} rounds", avg_round);
-  // println!("  Minimum: {} rounds", min_round);
-  // println!("  Maximum: {} rounds", max_round);
-  // println!();
-  // println!("Winning Round Distribution:");
 
-  // let mut sorted_rounds: Vec<_> = round_distribution.iter().collect();
-  // sorted_rounds.sort_by_key(|&(round, _)| round);
+  // Print round statistics and distributions
+  debug_print_round_statistics(&round_distribution, sim_count);
+  debug_print_winner_distribution(&winner_distribution, sim_count);
 
-  // let max_count = *round_distribution.values().max().unwrap_or(&1);
-  // let bar_width = 50;
-
-  // for (round, count) in sorted_rounds {
-  //   let bar_length = ((*count as f64 / max_count as f64) * bar_width as f64) as usize;
-  //   let percentage = (*count as f64 / sim_count as f64) * 100.0;
-  //   println!(
-  //     "  Round {:2}: {:>5} ({:5.2}%) {}",
-  //     round,
-  //     count,
-  //     percentage,
-  //     "█".repeat(bar_length)
-  //   );
-  // }
-  // println!();
-
-  // println!("Winner Index Distribution:");
-
-  // let mut sorted_winners: Vec<_> = winner_distribution.iter().collect();
-  // sorted_winners.sort_by_key(|&(index, _)| index);
-
-  // let max_winner_count = *winner_distribution.values().max().unwrap_or(&1);
-
-  // for (index, count) in sorted_winners {
-  //   let bar_length = ((*count as f64 / max_winner_count as f64) * bar_width as f64) as usize;
-  //   let percentage = (*count as f64 / sim_count as f64) * 100.0;
-  //   println!(
-  //     "  Player {}: {:>5} ({:5.2}%) {}",
-  //     index,
-  //     count,
-  //     percentage,
-  //     "█".repeat(bar_length)
-  //   );
-  // }
-  // println!();
-
-  debug_print_simulation_results(total_card_counts);
+  println!();
+  debug_print_card_counts_stats(total_card_counts);
 }

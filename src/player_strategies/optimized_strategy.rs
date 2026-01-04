@@ -2,11 +2,11 @@ use rand::rngs::StdRng;
 use rand::seq::SliceRandom;
 use rand::{Rng, SeedableRng};
 
+use crate::player_strategies::player_strategy::ExchangeEstablishmentDecision;
 use crate::{
   game::Game,
   player_strategies::{
     player_strategy::{DiceRollDecision, PurchaseDecision},
-    strategy_utils::decide_purchase_randomly,
     PlayerStrategy,
   },
 };
@@ -32,7 +32,13 @@ impl PlayerStrategy for OptimizedStrategy {
     }
   }
 
+  // TODO placeholder
   fn decide_purchase(&mut self, game: &Game) -> PurchaseDecision {
-    decide_purchase_randomly(&mut self.rng, game)
+    PurchaseDecision::BuyNothing
+  }
+
+  // TODO placeholder
+  fn decide_exchange_establishment(&mut self, game: &Game) -> ExchangeEstablishmentDecision {
+    ExchangeEstablishmentDecision::NoExchange
   }
 }

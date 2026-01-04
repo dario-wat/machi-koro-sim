@@ -1,5 +1,5 @@
 use crate::game::Game;
-use crate::models::CardDef;
+use crate::models::{Card, CardDef};
 
 /// Shared helper methods for modifying game state
 /// Used by both card and landmark rules
@@ -95,5 +95,22 @@ impl Game {
         self.move_coins_between_players(player_index, owner_index, coins_to_take);
       }
     }
+  }
+
+  #[inline]
+  fn move_cards_between_players(&mut self, from_index: usize, to_index: usize, card: Card) {
+    let card_index = self.players[from_index]
+      .cards
+      .iter()
+      .position(|c| *c == card)
+      .unwrap();
+    self.players[from_index].cards.remove(card_index);
+    self.players[to_index].cards.push(card);
+  }
+
+  #[inline]
+  pub fn exchange_establishment(&mut self, card: Card, opponent_index: usize, opponent_card: Card) {
+    self.move_cards_between_players(self.current_player as usize, opponent_index, card);
+    self.move_cards_between_players(opponent_index, self.current_player as usize, opponent_card);
   }
 }

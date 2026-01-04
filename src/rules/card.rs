@@ -1,7 +1,14 @@
 use crate::game::Game;
 use crate::models::{Card, CardCategory, CardColor, CardDef};
+use crate::player_strategies::player_strategy::ExchangeEstablishmentDecision;
+use crate::player_strategies::PlayerStrategy;
 
-pub fn activate_card(card: Card, game: &mut Game, owner_index: usize) {
+pub fn activate_card(
+  card: Card,
+  game: &mut Game,
+  owner_index: usize,
+  player_strategy: &mut dyn PlayerStrategy,
+) {
   match card {
     Card::SushiBar => {
       game.take_coins_from_active_player(owner_index, 3);
@@ -62,8 +69,13 @@ pub fn activate_card(card: Card, game: &mut Game, owner_index: usize) {
     }
 
     Card::BusinessCenter => {
-      // TODO: exchange establishment
-      // this effect is optional. the card itself can be exchanged
+      let decision = player_strategy.decide_exchange_establishment(game);
+      match decision {
+        ExchangeEstablishmentDecision::Exchange(card, opponent_index, opponent_card) => {
+          game.exchange_establishment(card, opponent_index, opponent_card);
+        }
+        ExchangeEstablishmentDecision::NoExchange => {}
+      }
     }
 
     Card::Stadium => {

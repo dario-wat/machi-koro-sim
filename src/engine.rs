@@ -123,7 +123,7 @@ impl Engine {
   /// All cards are activated in the order of their color.
   /// Activation order: Red -> Blue and Green -> Purple -> Orange/Landmarks
   /// For red cards, pay coins in reverse order of players
-  fn earn_income_phase(&mut self, dice_roll_sum: u8) {
+  pub fn earn_income_phase(&mut self, dice_roll_sum: u8) {
     // Collect cards to activate (to avoid borrow conflicts). Vec<(card, card owner index)>
     // Pre-allocate with capacity for ~4 players * ~15 cards = 60 max
     let mut cards_to_activate: Vec<(Card, usize)> = Vec::with_capacity(60);
@@ -162,7 +162,12 @@ impl Engine {
 
     // Activate collected cards
     for (card, player_index) in cards_to_activate {
-      activate_card(card, &mut self.game, player_index);
+      activate_card(
+        card,
+        &mut self.game,
+        player_index,
+        &mut *self.player_strategies[player_index],
+      );
     }
   }
 
@@ -205,6 +210,7 @@ impl Engine {
     }
   }
 
+  // TODO this should be moved somewhere else
   pub fn collect_data_for_simulation(&self) -> SimulationResult {
     let winner_index = self.game.winner().expect("No winner found");
     let winner = &self.game.players[winner_index];

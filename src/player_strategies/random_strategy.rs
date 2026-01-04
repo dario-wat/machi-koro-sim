@@ -1,8 +1,7 @@
 use crate::game::Game;
 use crate::player_strategies::player_strategy::{
-  DiceRollDecision, PlayerStrategy, PurchaseDecision,
+  DiceRollDecision, ExchangeEstablishmentDecision, PlayerStrategy, PurchaseDecision,
 };
-use crate::player_strategies::strategy_utils::decide_purchase_randomly;
 use rand::rngs::StdRng;
 use rand::seq::SliceRandom;
 use rand::{Rng, SeedableRng};
@@ -28,7 +27,42 @@ impl PlayerStrategy for RandomStrategy {
     }
   }
 
+  /// Player chooses a random card, landmark or nothing to buy. Each options has equal probability.
+  /// E.g. if player can afford 2 cards and 1 landmark, each option has a 1/4 probability.
   fn decide_purchase(&mut self, game: &Game) -> PurchaseDecision {
-    decide_purchase_randomly(&mut self.rng, game)
+    // Pre-allocate: max 5 cards from each deck + 5 landmarks + 1 nothing = ~16 options
+    let mut options = Vec::with_capacity(16);
+    for card in game.get_affordable_cards() {
+      options.push(PurchaseDecision::BuyCard(card));
+    }
+    for landmark in game.get_affordable_landmarks() {
+      options.push(PurchaseDecision::BuyLandmark(landmark));
+    }
+    options.push(PurchaseDecision::BuyNothing);
+    *options
+      .choose(&mut self.rng)
+      .unwrap_or(&PurchaseDecision::BuyNothing)
+  }
+
+  /// Player chooses a random card of their own or no card. If a card is chosen, then the player
+  /// chooses a random card from any of the opponents. Each option has equal probability.
+  fn decide_exchange_establishment(&mut self, game: &Game) -> ExchangeEstablishmentDecision {
+    let current_player = &game.players[game.current_player];
+    if current_player.cards.is_empty() {
+      return ExchangeEstablishmentDecision::NoExchange;
+    }
+
+    let num_cards = current_player.cards.len();
+    let choice_index = self.rng.gen_range(0..=num_cards);
+    if choice_index == num_cards {
+      return ExchangeEstablishmentDecision::NoExchange;
+    }
+
+    let card_to_exchange = current_player.cards[choice_index];
+
+    let (opponent_card, opponent_index) =
+      *game.get_opponents_cards().choose(&mut self.rng).unwrap();
+
+    ExchangeEstablishmentDecision::Exchange(card_to_exchange, opponent_index, opponent_card)
   }
 }

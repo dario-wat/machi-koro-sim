@@ -1,6 +1,7 @@
 use super::card::Card;
 use super::landmark::Landmark;
 
+#[derive(Clone)]
 pub struct Player {
   pub coins: u16,
   pub cards: Vec<Card>,

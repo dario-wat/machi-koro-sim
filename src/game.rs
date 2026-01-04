@@ -9,6 +9,7 @@ use crate::rules::landmark::build_landmark_deck;
 
 const LANDMARKS_TO_WIN: usize = 3;
 
+#[derive(Clone)]
 pub struct Game {
   pub rng: Rng,
   pub seed: u64,
