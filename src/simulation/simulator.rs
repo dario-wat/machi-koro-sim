@@ -32,7 +32,6 @@ impl Engine {
 }
 
 const NUM_PLAYERS: usize = 4;
-const ROUND_BREAKDOWN: [usize; 3] = [5, 10, 15];
 
 pub struct Simulator;
 

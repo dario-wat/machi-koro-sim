@@ -44,9 +44,5 @@ fn main() {
   let elapsed = start_time.elapsed();
   println!("Simulations completed in {:.2?}", elapsed);
 
-  debug_print_card_counts_stats(
-    result.total_card_counts,
-    result.p_present_win,
-    result.p_present_loss,
-  );
+  debug_print_card_counts_stats(result);
 }
