@@ -8,7 +8,7 @@ use strum::IntoEnumIterator;
 use crate::{
   engine::Engine,
   models::{player::OwnedCard, Card},
-  player_strategies::{GreedyBestCardStrategy, RandomStrategy},
+  player_strategies::{GreedyBestCardStrategy, LandmarkRushStrategy, RandomStrategy},
   simulation::accumulator::{SimulationAccumulator, SimulationResult},
 };
 
@@ -55,10 +55,10 @@ impl Simulator {
       let mut engine = Engine::new();
 
       engine.add_player_strategy(Box::new(RandomStrategy::new()));
+      engine.add_player_strategy(Box::new(LandmarkRushStrategy::new()));
       engine.add_player_strategy(Box::new(RandomStrategy::new()));
-      engine.add_player_strategy(Box::new(RandomStrategy::new()));
-      engine.add_player_strategy(Box::new(RandomStrategy::new()));
-      // engine.add_player_strategy(Box::new(GreedyBestCardStrategy::new()));
+      // engine.add_player_strategy(Box::new(RandomStrategy::new()));
+      engine.add_player_strategy(Box::new(GreedyBestCardStrategy::new()));
       engine.run();
 
       let result = engine.collect_data_for_simulation();

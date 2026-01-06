@@ -3,6 +3,7 @@
 mod debug;
 mod engine;
 mod game;
+mod math;
 mod models;
 mod optimization;
 mod player_strategies;

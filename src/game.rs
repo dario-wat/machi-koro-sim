@@ -77,6 +77,10 @@ impl Game {
     self.current_turn / self.players.len()
   }
 
+  pub fn get_current_player(&self) -> &Player {
+    &self.players[self.current_player]
+  }
+
   pub fn winner(&self) -> Option<usize> {
     for (index, player) in self.players.iter().enumerate() {
       if player.landmarks.len() == LANDMARKS_TO_WIN

@@ -8,11 +8,11 @@ use crate::player_strategies::player_strategy::{
 };
 use crate::player_strategies::RandomStrategy;
 
-pub struct GreedyBestCardStrategy {
-  random: RandomStrategy, // Composition: contains a RandomStrategy
+pub struct LandmarkRushStrategy {
+  random: RandomStrategy,
 }
 
-impl GreedyBestCardStrategy {
+impl LandmarkRushStrategy {
   pub fn new() -> Self {
     Self {
       random: RandomStrategy::new(),
@@ -20,19 +20,11 @@ impl GreedyBestCardStrategy {
   }
 }
 
-const CARDS_TO_BUY: &[Card] = &[Card::ShoppingDistrict, Card::Vineyard, Card::FlowerGarden];
-
-impl PlayerStrategy for GreedyBestCardStrategy {
-  // Override: Buy landmark first if available, then buy the best card
+impl PlayerStrategy for LandmarkRushStrategy {
+  // Override: Buy landmark first if available
   fn decide_purchase(&mut self, game: &Game) -> PurchaseDecision {
     if let Some(landmark) = game.get_affordable_landmarks().first() {
       return PurchaseDecision::BuyLandmark(*landmark);
-    }
-    let affordable_cards: HashSet<Card> = game.get_affordable_cards().into_iter().collect();
-    for card in CARDS_TO_BUY {
-      if affordable_cards.contains(card) {
-        return PurchaseDecision::BuyCard(*card);
-      }
     }
     self.random.decide_purchase(game)
   }
