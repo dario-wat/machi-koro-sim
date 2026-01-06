@@ -1,3 +1,4 @@
+use crate::engine::MAX_PLAYERS;
 use crate::models::player::OwnedCard;
 use crate::models::Card;
 use crate::simulation::simulator::GameResult;
@@ -13,6 +14,7 @@ pub struct SimulationResult {
   pub p_present_loss: HashMap<Card, f64>,
   pub p_present_win_by_round: [(usize, HashMap<Card, f64>); ROUND_BREAKDOWN.len()],
   pub p_present_loss_by_round: [(usize, HashMap<Card, f64>); ROUND_BREAKDOWN.len()],
+  pub win_count_by_player_index: Vec<usize>,
 }
 
 pub struct SimulationAccumulator {
@@ -28,6 +30,8 @@ pub struct SimulationAccumulator {
   // Present card counts for the other players by round (round number, HashMap<Card, count>)
   pub loss_present_card_counts_by_round:
     Mutex<[(usize, HashMap<Card, usize>); ROUND_BREAKDOWN.len()]>,
+  // Win counts by player index
+  pub win_count_by_player_index: Mutex<Vec<usize>>,
 }
 
 impl SimulationAccumulator {
@@ -42,6 +46,7 @@ impl SimulationAccumulator {
       loss_present_card_counts_by_round: Mutex::new(std::array::from_fn(|i| {
         (ROUND_BREAKDOWN[i], HashMap::new())
       })),
+      win_count_by_player_index: Mutex::new(vec![0; MAX_PLAYERS]),
     }
   }
 
@@ -52,6 +57,10 @@ impl SimulationAccumulator {
     self.accumulate_loss_present_card_counts(result);
     self.accumulate_win_present_card_counts_by_round(result);
     self.accumulate_loss_present_card_counts_by_round(result);
+
+    // Track win count by player index
+    let mut win_counts = self.win_count_by_player_index.lock().unwrap();
+    win_counts[result.winner_index] += 1;
   }
 
   fn accumulate_winner_total_card_counts(&self, result: &GameResult) {
@@ -185,12 +194,15 @@ impl SimulationAccumulator {
       }
     }
 
+    let win_count_by_player_index = self.win_count_by_player_index.into_inner().unwrap();
+
     SimulationResult {
       winner_total_card_counts,
       p_present_win,
       p_present_loss,
       p_present_win_by_round,
       p_present_loss_by_round,
+      win_count_by_player_index,
     }
   }
 }

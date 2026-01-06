@@ -120,10 +120,18 @@ impl Game {
   }
 
   pub fn roll_one_die(&mut self) -> u8 {
+    let round = self.get_round() as u8;
+    self.players[self.current_player]
+      .dice_rolls
+      .push((1, round));
     self.rng.roll_die()
   }
 
   pub fn roll_two_dice(&mut self) -> (u8, u8) {
+    let round = self.get_round() as u8;
+    self.players[self.current_player]
+      .dice_rolls
+      .push((2, round));
     self.rng.roll_two_dice()
   }
 

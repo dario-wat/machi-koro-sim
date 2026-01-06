@@ -8,13 +8,14 @@ use strum::IntoEnumIterator;
 use crate::{
   engine::Engine,
   models::{player::OwnedCard, Card},
-  player_strategies::RandomStrategy,
+  player_strategies::{GreedyBestCardStrategy, RandomStrategy},
   simulation::accumulator::{SimulationAccumulator, SimulationResult},
 };
 
 pub struct GameResult {
   pub player_cards: Vec<Vec<OwnedCard>>,
   pub winner_index: usize,
+  pub player_dice_rolls: Vec<Vec<(u8, u8)>>,
 }
 
 impl Engine {
@@ -27,6 +28,12 @@ impl Engine {
         .map(|player| player.cards.clone())
         .collect(),
       winner_index: self.game.winner().expect("No winner found"),
+      player_dice_rolls: self
+        .game
+        .players
+        .iter()
+        .map(|player| player.dice_rolls.clone())
+        .collect(),
     }
   }
 }
@@ -46,9 +53,12 @@ impl Simulator {
     // Run simulations in parallel
     (0..sim_count).into_par_iter().for_each(|_| {
       let mut engine = Engine::new();
-      for _ in 0..NUM_PLAYERS {
-        engine.add_player_strategy(Box::new(RandomStrategy::new()));
-      }
+
+      engine.add_player_strategy(Box::new(RandomStrategy::new()));
+      engine.add_player_strategy(Box::new(RandomStrategy::new()));
+      engine.add_player_strategy(Box::new(RandomStrategy::new()));
+      engine.add_player_strategy(Box::new(RandomStrategy::new()));
+      // engine.add_player_strategy(Box::new(GreedyBestCardStrategy::new()));
       engine.run();
 
       let result = engine.collect_data_for_simulation();

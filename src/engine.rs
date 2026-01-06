@@ -15,7 +15,7 @@ use crate::{
 
 const BUY_ONLY_TURNS: usize = 3;
 const MIN_PLAYERS: usize = 2;
-const MAX_PLAYERS: usize = 4;
+pub const MAX_PLAYERS: usize = 4;
 
 pub struct Engine {
   pub game: Game,

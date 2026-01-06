@@ -18,6 +18,7 @@ pub struct Player {
   pub coins: u16,
   pub cards: Vec<OwnedCard>,
   pub landmarks: Vec<OwnedLandmark>,
+  pub dice_rolls: Vec<(u8, u8)>, // (dice roll - 1 or 2, round)
 }
 
 impl Player {
@@ -26,6 +27,7 @@ impl Player {
       coins: 5, // start with 5 coins
       cards: Vec::new(),
       landmarks: Vec::new(),
+      dice_rolls: Vec::new(),
     }
   }
 
